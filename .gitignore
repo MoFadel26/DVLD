@@ -1,0 +1,17 @@
+# Build output
+bin/
+obj/
+TestResults/
+
+# IDE
+.idea/
+.vs/
+*.user
+
+# Local SDK, NuGet, and tool caches
+.dotnet/
+.local/
+Library/
+
+# OS
+.DS_Store
