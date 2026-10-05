@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/DVLD.Api/DVLD.Api.csproj" />
+    <Project Path="src/DVLD.Application/DVLD.Application.csproj" />
+    <Project Path="src/DVLD.Domain/DVLD.Domain.csproj" />
+    <Project Path="src/DVLD.Infrastructure/DVLD.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/DVLD.UnitTests/DVLD.UnitTests.csproj" />
+  </Folder>
+</Solution>
