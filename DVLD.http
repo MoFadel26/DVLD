@@ -1,0 +1,239 @@
+@baseUrl = http://localhost:5000
+
+### 1. View Native OpenAPI Specification
+GET {{baseUrl}}/openapi/v1.json
+
+### ==========================================
+### 2. LICENSE CLASSES
+### ==========================================
+
+### Get All 7 License Classes
+GET {{baseUrl}}/api/license-classes
+
+### Get License Class by ID (Class 3 - Standard Car)
+GET {{baseUrl}}/api/license-classes/3
+
+### ==========================================
+### 3. PEOPLE
+### ==========================================
+
+### Get All People
+GET {{baseUrl}}/api/people
+
+### Get Person by ID (Ahmad Al-Sayed - Eligible adult)
+GET {{baseUrl}}/api/people/1
+
+### Get Person by National ID
+GET {{baseUrl}}/api/people/by-national-no/N1001
+
+### Create a New Person
+POST {{baseUrl}}/api/people
+Content-Type: application/json
+
+{
+  "nationalNo": "N2001",
+  "firstName": "Zaid",
+  "secondName": "Omar",
+  "thirdName": "Tariq",
+  "lastName": "Husseini",
+  "dateOfBirth": "1998-05-15T00:00:00Z",
+  "gender": 0,
+  "address": "Gardens Street, Amman",
+  "phone": "+962791234567",
+  "email": "zaid.husseini@example.com",
+  "nationalityCountryId": 1,
+  "imagePath": null
+}
+
+### ==========================================
+### 4. LOCAL DRIVING LICENSE APPLICATIONS
+### ==========================================
+
+### Test Chain of Responsibility: Underage Applicant Rejection (Sara, 16 yrs applying for Class 3) -> Returns HTTP 400
+POST {{baseUrl}}/api/applications/local-license
+Content-Type: application/json
+
+{
+  "applicantPersonId": 2,
+  "licenseClassId": 3,
+  "createdByUserId": 1
+}
+
+### Submit Valid New Local License Application (Ahmad, 25 yrs, Class 3)
+POST {{baseUrl}}/api/applications/local-license
+Content-Type: application/json
+
+{
+  "applicantPersonId": 1,
+  "licenseClassId": 3,
+  "createdByUserId": 1
+}
+
+### Get All Local License Applications
+GET {{baseUrl}}/api/applications/local-license
+
+### Get Local License Application by ID
+GET {{baseUrl}}/api/applications/local-license/1
+
+### Cancel Application (Triggers State Pattern)
+PUT {{baseUrl}}/api/applications/1/cancel
+
+### ==========================================
+### 5. TESTS & EXAMINATIONS (Template Method)
+### ==========================================
+
+### Test Template Method: Attempt Theory Test before Vision Test -> Returns HTTP 400 Prerequisite Error
+POST {{baseUrl}}/api/tests/appointments
+Content-Type: application/json
+
+{
+  "localDrivingLicenseApplicationId": 1,
+  "testType": 2,
+  "appointmentDate": "2026-09-15T10:00:00Z",
+  "createdByUserId": 1
+}
+
+### Step 1: Schedule Vision Test (TestType = 1, Fee = $10)
+POST {{baseUrl}}/api/tests/appointments
+Content-Type: application/json
+
+{
+  "localDrivingLicenseApplicationId": 1,
+  "testType": 1,
+  "appointmentDate": "2026-09-11T10:00:00Z",
+  "createdByUserId": 1
+}
+
+### Step 2: Take Vision Test (TestResult = 1 for Pass, 0 for Fail)
+POST {{baseUrl}}/api/tests/1/take
+Content-Type: application/json
+
+{
+  "testAppointmentId": 1,
+  "testResult": 1,
+  "notes": "Visual acuity 20/20",
+  "createdByUserId": 1
+}
+
+### Step 3: Schedule Theory Test (Now allowed! TestType = 2, Fee = $20)
+POST {{baseUrl}}/api/tests/appointments
+Content-Type: application/json
+
+{
+  "localDrivingLicenseApplicationId": 1,
+  "testType": 2,
+  "appointmentDate": "2026-09-12T10:00:00Z",
+  "createdByUserId": 1
+}
+
+### Step 4: Take Theory Test (Pass)
+POST {{baseUrl}}/api/tests/2/take
+Content-Type: application/json
+
+{
+  "testAppointmentId": 2,
+  "testResult": 1,
+  "notes": "Score: 92/100",
+  "createdByUserId": 1
+}
+
+### Step 5: Schedule Practical Test (TestType = 3, Fee = $30)
+POST {{baseUrl}}/api/tests/appointments
+Content-Type: application/json
+
+{
+  "localDrivingLicenseApplicationId": 1,
+  "testType": 3,
+  "appointmentDate": "2026-09-13T10:00:00Z",
+  "createdByUserId": 1
+}
+
+### Step 6: Take Practical Test (Pass)
+POST {{baseUrl}}/api/tests/3/take
+Content-Type: application/json
+
+{
+  "testAppointmentId": 3,
+  "testResult": 1,
+  "notes": "Passed practical road test",
+  "createdByUserId": 1
+}
+
+### Check Passed Test Count (Should be 3)
+GET {{baseUrl}}/api/tests/passed-count/1
+
+### ==========================================
+### 6. LICENSES (Factory Method, Builder, State)
+### ==========================================
+
+### Issue First-Time License (Generates 10-year validity for Class 3, completes Application)
+POST {{baseUrl}}/api/licenses/issue-first-time
+Content-Type: application/json
+
+{
+  "localDrivingLicenseApplicationId": 1,
+  "notes": "First time issuance",
+  "createdByUserId": 1
+}
+
+### Get License by ID
+GET {{baseUrl}}/api/licenses/1
+
+### Get All Licenses by Driver ID
+GET {{baseUrl}}/api/licenses/driver/1
+
+### Issue International Driving License (Requires active Class 3 license, 1-year validity)
+POST {{baseUrl}}/api/licenses/international
+Content-Type: application/json
+
+{
+  "localLicenseId": 1,
+  "createdByUserId": 1
+}
+
+### Detain License (Impound with Fine $150)
+POST {{baseUrl}}/api/licenses/detain
+Content-Type: application/json
+
+{
+  "licenseId": 1,
+  "fineFees": 150.00,
+  "createdByUserId": 1
+}
+
+### Try Renewing while Detained -> Returns HTTP 400 Blocked
+POST {{baseUrl}}/api/licenses/renew
+Content-Type: application/json
+
+{
+  "licenseId": 1,
+  "notes": "Attempting renew",
+  "createdByUserId": 1
+}
+
+### Release Detained License (Pays fine and lifts detention)
+POST {{baseUrl}}/api/licenses/release
+Content-Type: application/json
+
+{
+  "licenseId": 1,
+  "releasedByUserId": 1
+}
+
+### Replace Lost License
+POST {{baseUrl}}/api/licenses/replace-lost
+Content-Type: application/json
+
+{
+  "licenseId": 1,
+  "createdByUserId": 1
+}
+
+### Replace Damaged License
+POST {{baseUrl}}/api/licenses/replace-damaged
+Content-Type: application/json
+
+{
+  "licenseId": 1,
+  "createdByUserId": 1
+}
