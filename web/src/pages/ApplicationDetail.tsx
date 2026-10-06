@@ -143,7 +143,9 @@ export function ApplicationDetail() {
       {a.applicationStatus === 'Completed' && (
         <p className="alert alert-success">
           <Icon name="check" size={18} className="alert-icon" />
-          {t('app.completed')} <Link to="/licenses">{t('app.findLicense')}</Link>
+          <span>
+            {t('app.completed')} <Link to="/licenses">{t('app.findLicense')}</Link>
+          </span>
         </p>
       )}
 
