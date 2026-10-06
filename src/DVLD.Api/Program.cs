@@ -7,6 +7,7 @@ using DVLD.Infrastructure.Auth;
 using DVLD.Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -30,6 +31,19 @@ builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationSc
     {
         options.MapInboundClaims = false;
         options.TokenValidationParameters = settings.ValidationParameters;
+        options.Events = new JwtBearerEvents
+        {
+            // Reject tokens that were signed out before they expired.
+            OnTokenValidated = async context =>
+            {
+                string? tokenId = context.Principal?.FindFirst(JwtRegisteredClaimNames.Jti)?.Value;
+                var revokedTokens = context.HttpContext.RequestServices.GetRequiredService<IRevokedTokenRepository>();
+                if (tokenId == null || await revokedTokens.IsRevokedAsync(tokenId, context.HttpContext.RequestAborted))
+                {
+                    context.Fail("The token has been signed out.");
+                }
+            }
+        };
     });
 builder.Services.AddAuthorization(options =>
 {

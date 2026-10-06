@@ -29,6 +29,7 @@ public static class DependencyInjection
         // Register Repositories
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IRevokedTokenRepository, RevokedTokenRepository>();
         services.AddScoped<ICountryRepository, CountryRepository>();
         services.AddScoped<IPersonRepository, PersonRepository>();
         services.AddScoped<IApplicationRepository, ApplicationRepository>();

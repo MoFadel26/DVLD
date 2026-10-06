@@ -11,6 +11,7 @@ public class UnitOfWork : IUnitOfWork
     private readonly DvldDbContext _context;
 
     public IUserRepository Users { get; }
+    public IRevokedTokenRepository RevokedTokens { get; }
     public ICountryRepository Countries { get; }
     public IPersonRepository People { get; }
     public IApplicationRepository Applications { get; }
@@ -28,6 +29,7 @@ public class UnitOfWork : IUnitOfWork
     public UnitOfWork(
         DvldDbContext context,
         IUserRepository users,
+        IRevokedTokenRepository revokedTokens,
         ICountryRepository countries,
         IPersonRepository people,
         IApplicationRepository applications,
@@ -44,6 +46,7 @@ public class UnitOfWork : IUnitOfWork
     {
         _context = context;
         Users = users;
+        RevokedTokens = revokedTokens;
         Countries = countries;
         People = people;
         Applications = applications;

@@ -19,6 +19,24 @@ public class UserRepository : Repository<User>, IUserRepository
     }
 }
 
+public class RevokedTokenRepository : Repository<RevokedToken>, IRevokedTokenRepository
+{
+    public RevokedTokenRepository(DvldDbContext context) : base(context)
+    {
+    }
+
+    public async Task<bool> IsRevokedAsync(string tokenId, CancellationToken cancellationToken = default)
+    {
+        return await DbSet.AnyAsync(t => t.TokenId == tokenId, cancellationToken);
+    }
+
+    public async Task DeleteExpiredAsync(DateTime now, CancellationToken cancellationToken = default)
+    {
+        var expired = await DbSet.Where(t => t.ExpiresAt < now).ToListAsync(cancellationToken);
+        DbSet.RemoveRange(expired);
+    }
+}
+
 public class CountryRepository : Repository<Country>, ICountryRepository
 {
     public CountryRepository(DvldDbContext context) : base(context)

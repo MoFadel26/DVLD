@@ -17,6 +17,18 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
     }
 }
 
+public class RevokedTokenConfiguration : IEntityTypeConfiguration<RevokedToken>
+{
+    public void Configure(EntityTypeBuilder<RevokedToken> builder)
+    {
+        builder.ToTable("RevokedTokens");
+        builder.HasKey(t => t.RevokedTokenId);
+        builder.Property(t => t.RevokedTokenId).ValueGeneratedOnAdd();
+        builder.Property(t => t.TokenId).IsRequired().HasMaxLength(64);
+        builder.HasIndex(t => t.TokenId).IsUnique();
+    }
+}
+
 public class CountryConfiguration : IEntityTypeConfiguration<Country>
 {
     public void Configure(EntityTypeBuilder<Country> builder)

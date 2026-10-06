@@ -1,5 +1,6 @@
 using DVLD.Application.Common.Interfaces;
 using DVLD.Application.DTOs;
+using DVLD.Domain.Entities;
 using DVLD.Domain.Exceptions;
 
 namespace DVLD.Application.Services;
@@ -39,5 +40,24 @@ public class AuthService : IAuthService
         var user = await _unitOfWork.Users.GetByIdAsync(_currentUser.UserId, cancellationToken)
             ?? throw new EntityNotFoundException("User", _currentUser.UserId);
         return new UserDto(user.UserId, user.Username);
+    }
+
+    public async Task LogoutAsync(CancellationToken cancellationToken = default)
+    {
+        string tokenId = _currentUser.TokenId
+            ?? throw new UnauthorizedAccessException("The request's token has no id, so it cannot be revoked.");
+
+        if (!await _unitOfWork.RevokedTokens.IsRevokedAsync(tokenId, cancellationToken))
+        {
+            await _unitOfWork.RevokedTokens.AddAsync(new RevokedToken
+            {
+                TokenId = tokenId,
+                ExpiresAt = _currentUser.TokenExpiresAt ?? DateTime.UtcNow
+            }, cancellationToken);
+        }
+
+        // Revoked tokens past their expiry are rejected anyway, so their rows can go.
+        await _unitOfWork.RevokedTokens.DeleteExpiredAsync(DateTime.UtcNow, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

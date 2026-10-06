@@ -22,6 +22,12 @@ public interface IUserRepository : IRepository<User>
     Task<User?> GetByUsernameAsync(string username, CancellationToken cancellationToken = default);
 }
 
+public interface IRevokedTokenRepository : IRepository<RevokedToken>
+{
+    Task<bool> IsRevokedAsync(string tokenId, CancellationToken cancellationToken = default);
+    Task DeleteExpiredAsync(DateTime now, CancellationToken cancellationToken = default);
+}
+
 public interface ICountryRepository : IRepository<Country>
 {
 }
@@ -102,6 +108,7 @@ public interface ITestTypeRepository : IRepository<TestType>
 public interface IUnitOfWork
 {
     IUserRepository Users { get; }
+    IRevokedTokenRepository RevokedTokens { get; }
     ICountryRepository Countries { get; }
     IPersonRepository People { get; }
     IApplicationRepository Applications { get; }

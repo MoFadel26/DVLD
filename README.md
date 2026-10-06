@@ -104,6 +104,7 @@ After that, the license can be renewed, replaced (lost or damaged), detained, re
 | Method | Route | Purpose |
 | :--- | :--- | :--- |
 | POST | `/api/auth/login` | Sign in with a username and password; returns a JWT |
+| POST | `/api/auth/logout` | Sign out: the token used for this request stops working at once |
 | GET | `/api/auth/me` | The signed-in user |
 
 ### Countries

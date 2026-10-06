@@ -16,6 +16,10 @@ Content-Type: application/json
 GET {{baseUrl}}/api/auth/me
 Authorization: Bearer {{token}}
 
+### Sign out (the token stops working; run the sign-in request again afterwards)
+POST {{baseUrl}}/api/auth/logout
+Authorization: Bearer {{token}}
+
 ### 1. View Native OpenAPI Specification
 GET {{baseUrl}}/openapi/v1.json
 

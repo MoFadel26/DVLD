@@ -24,6 +24,13 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout(CancellationToken cancellationToken)
+    {
+        await _authService.LogoutAsync(cancellationToken);
+        return NoContent();
+    }
+
     [HttpGet("me")]
     public async Task<ActionResult<UserDto>> Me(CancellationToken cancellationToken)
     {

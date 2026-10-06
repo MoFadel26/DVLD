@@ -8,6 +8,12 @@ namespace DVLD.Application.Common.Interfaces;
 public interface ICurrentUser
 {
     int UserId { get; }
+
+    /// <summary>The JWT id ("jti") of the token the request was signed with.</summary>
+    string? TokenId { get; }
+
+    /// <summary>When the request's token expires.</summary>
+    DateTime? TokenExpiresAt { get; }
 }
 
 public interface IPasswordHasher
