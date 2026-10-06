@@ -22,14 +22,8 @@ const tests: { type: TestType; icon: IconName; lane: Key; title: Key }[] = [
 
 type Outcome = 'pass' | 'fail' | 'pending'
 
-/**
- * The API does not return a result per appointment. Tests run in order and
- * a passed test cannot be booked again, so for a passed test the last locked
- * appointment is the pass and every earlier locked one is a fail.
- */
-function outcomes(appts: TestAppointment[], passed: boolean): Outcome[] {
-  const lastLocked = appts.map((a) => a.isLocked).lastIndexOf(true)
-  return appts.map((a, i) => (!a.isLocked ? 'pending' : passed && i === lastLocked ? 'pass' : 'fail'))
+function outcomes(appts: TestAppointment[]): Outcome[] {
+  return appts.map((a) => (a.testResult === 'Pass' ? 'pass' : a.testResult === 'Fail' ? 'fail' : 'pending'))
 }
 
 function testState(index: number, app: LocalApplication): StepState {
@@ -67,7 +61,7 @@ export function ApplicationDetail() {
   const laneSub = (index: number) => {
     const list = lists?.[index]
     if (!list) return undefined
-    const results = outcomes(list, index < a.passedTestCount)
+    const results = outcomes(list)
     const fails = results.filter((r) => r === 'fail').length
     const open = list.find((x) => !x.isLocked)
     if (index < a.passedTestCount)
@@ -211,7 +205,7 @@ function TestPanel({
   const { t, dateTime, money } = useI18n()
   const test = tests[index]
   const state = testState(index, app)
-  const results = outcomes(appointments, index < app.passedTestCount)
+  const results = outcomes(appointments)
   const open = appointments.find((x) => !x.isLocked)
   const canBook = state === 'current' && !open
 
@@ -237,6 +231,7 @@ function TestPanel({
               <span className="appt-when">
                 <span className="appt-n">{t('test.appointment', { n: i + 1 })}</span>
                 <span className="nowrap">{dateTime(ap.appointmentDate)}</span>
+                {ap.resultNotes && <span className="appt-notes">{ap.resultNotes}</span>}
               </span>
               <span className="appt-fee num">{money(ap.paidFees)}</span>
               <span className={`result result-${results[i]}`}>

@@ -77,6 +77,8 @@ export type TestAppointment = {
   isLocked: boolean
   createdByUserId: number
   retakeTestApplicationId: number | null
+  testResult: 'Pass' | 'Fail' | null
+  resultNotes: string | null
 }
 
 export type TestResult = {
