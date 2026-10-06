@@ -11,7 +11,7 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:5173. Requests to `/api` are proxied to http://localhost:5000.
+Open http://localhost:5173 and sign in as `admin` / `Admin@12345` (the account the API seeds in Development). Requests to `/api` are proxied to http://localhost:5000 with the signed-in user's token; when the token is rejected or expires, the app returns to the sign-in page.
 
 | Command | What it does |
 | :--- | :--- |
@@ -23,10 +23,10 @@ Open http://localhost:5173. Requests to `/api` are proxied to http://localhost:5
 
 | Route | Page |
 | :--- | :--- |
+| `/login` | Sign in |
 | `/` | Overview: the licensing route with live counts and open applications |
 | `/people`, `/people/new`, `/people/:id`, `/people/:id/edit` | Register, view, edit, and delete people |
 | `/applications`, `/applications/new`, `/applications/:id` | Applications, the Vision, Theory, Practical test workflow, and issuing the first license |
-| `/licenses`, `/licenses/:id`, `/drivers/:id` | License lookup, license services (renew, replace, detain, release, international), and a driver's licenses |
+| `/licenses`, `/licenses/:id` | All licenses, and license services (renew, replace, detain, release, international) |
+| `/drivers`, `/drivers/:id` | Drivers and each driver's licenses |
 | `/classes` | The 7 license classes |
-
-The API has no endpoint that lists all licenses, so license ids opened in the browser are kept in `localStorage` and shown on `/licenses`.
