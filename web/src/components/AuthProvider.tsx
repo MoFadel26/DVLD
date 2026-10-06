@@ -19,7 +19,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(next)
         setSessionState(next)
       },
-      signOut: () => {
+      signOut: async () => {
+        // Revoke the token on the server; sign out locally even if that call fails.
+        try {
+          await api.logout()
+        } catch {
+          // Offline or token already rejected: nothing left to revoke.
+        }
         setSession(null)
         setSessionState(null)
       },

@@ -4,7 +4,7 @@ import type { User } from './api'
 export type Auth = {
   user: User | null
   signIn: (username: string, password: string) => Promise<void>
-  signOut: () => void
+  signOut: () => Promise<void>
 }
 
 export const AuthContext = createContext<Auth | null>(null)

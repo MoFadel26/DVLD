@@ -219,6 +219,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 
 export const api = {
   login: (username: string, password: string) => request<Session>('POST', '/auth/login', { username, password }),
+  logout: () => request<void>('POST', '/auth/logout'),
 
   countries: () => request<Country[]>('GET', '/countries'),
   people: () => request<Person[]>('GET', '/people'),
