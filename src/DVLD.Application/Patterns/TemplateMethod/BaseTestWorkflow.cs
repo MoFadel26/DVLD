@@ -79,7 +79,9 @@ public abstract class BaseTestWorkflow : ITestWorkflow
             appointment.PaidFees,
             appointment.IsLocked,
             appointment.CreatedByUserId,
-            appointment.RetakeTestApplicationId
+            appointment.RetakeTestApplicationId,
+            TestResult: null,
+            ResultNotes: null
         );
     }
 

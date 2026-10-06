@@ -105,7 +105,7 @@ After that, the license can be renewed, replaced (lost or damaged), detained, re
 | :--- | :--- | :--- |
 | POST | `/api/tests/appointments` | Schedule a test |
 | POST | `/api/tests/{testType}/take` | Record a test result (pass / fail) |
-| GET | `/api/tests/appointments/{localAppId}/{testType}` | List appointments for a test |
+| GET | `/api/tests/appointments/{localAppId}/{testType}` | List appointments for a test, with each result and examiner notes |
 | GET | `/api/tests/passed-count/{localAppId}` | Number of passed tests (0–3) |
 
 ### Licenses

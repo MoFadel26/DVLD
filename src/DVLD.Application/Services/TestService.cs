@@ -69,7 +69,9 @@ public class TestService : ITestService
             a.PaidFees,
             a.IsLocked,
             a.CreatedByUserId,
-            a.RetakeTestApplicationId
+            a.RetakeTestApplicationId,
+            a.TestResultRecord?.TestResult.ToString(),
+            a.TestResultRecord?.Notes
         )).ToList();
     }
 

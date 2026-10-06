@@ -124,6 +124,7 @@ public class TestAppointmentRepository : Repository<TestAppointment>, ITestAppoi
             .Include(ta => ta.TestResultRecord)
             .Where(ta => ta.LocalDrivingLicenseApplicationId == localAppId && ta.TestTypeId == (int)testType)
             .OrderBy(ta => ta.AppointmentDate)
+            .ThenBy(ta => ta.TestAppointmentId)
             .ToListAsync(cancellationToken);
     }
 

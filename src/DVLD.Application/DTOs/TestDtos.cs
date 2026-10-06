@@ -25,7 +25,9 @@ public record TestAppointmentResponseDto(
     decimal PaidFees,
     bool IsLocked,
     int CreatedByUserId,
-    int? RetakeTestApplicationId
+    int? RetakeTestApplicationId,
+    string? TestResult,
+    string? ResultNotes
 );
 
 public record TestResultResponseDto(
