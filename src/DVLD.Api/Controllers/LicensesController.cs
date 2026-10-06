@@ -71,6 +71,13 @@ public class LicensesController : ControllerBase
         return Ok(international);
     }
 
+    [HttpGet]
+    public async Task<ActionResult<IReadOnlyList<LicenseResponseDto>>> GetAll(CancellationToken cancellationToken)
+    {
+        var licenses = await _licenseService.GetAllLicensesAsync(cancellationToken);
+        return Ok(licenses);
+    }
+
     [HttpGet("{id:int}")]
     public async Task<ActionResult<LicenseResponseDto>> GetById(int id, CancellationToken cancellationToken)
     {

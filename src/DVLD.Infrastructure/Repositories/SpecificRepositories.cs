@@ -213,6 +213,15 @@ public class LicenseRepository : Repository<License>, ILicenseRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<License>> GetAllWithDetailsAsync(CancellationToken cancellationToken = default)
+    {
+        return await DbSet
+            .Include(l => l.Driver).ThenInclude(d => d.Person)
+            .Include(l => l.LicenseClass)
+            .OrderByDescending(l => l.LicenseId)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<License?> GetDetailsByIdAsync(int licenseId, CancellationToken cancellationToken = default)
     {
         return await DbSet
@@ -251,6 +260,15 @@ public class DetainedLicenseRepository : Repository<DetainedLicense>, IDetainedL
     public async Task<bool> IsLicenseDetainedAsync(int licenseId, CancellationToken cancellationToken = default)
     {
         return await DbSet.AnyAsync(dl => dl.LicenseId == licenseId && !dl.IsReleased, cancellationToken);
+    }
+
+    public async Task<IReadOnlySet<int>> GetDetainedLicenseIdsAsync(CancellationToken cancellationToken = default)
+    {
+        var ids = await DbSet
+            .Where(dl => !dl.IsReleased)
+            .Select(dl => dl.LicenseId)
+            .ToListAsync(cancellationToken);
+        return ids.ToHashSet();
     }
 }
 

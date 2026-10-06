@@ -65,6 +65,7 @@ public interface ILicenseRepository : IRepository<License>
 {
     Task<License?> GetActiveLicenseByPersonAndClassAsync(int personId, int licenseClassId, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<License>> GetLicensesByDriverIdAsync(int driverId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<License>> GetAllWithDetailsAsync(CancellationToken cancellationToken = default);
     Task<License?> GetDetailsByIdAsync(int licenseId, CancellationToken cancellationToken = default);
 }
 
@@ -77,6 +78,7 @@ public interface IDetainedLicenseRepository : IRepository<DetainedLicense>
 {
     Task<DetainedLicense?> GetCurrentDetentionByLicenseIdAsync(int licenseId, CancellationToken cancellationToken = default);
     Task<bool> IsLicenseDetainedAsync(int licenseId, CancellationToken cancellationToken = default);
+    Task<IReadOnlySet<int>> GetDetainedLicenseIdsAsync(CancellationToken cancellationToken = default);
 }
 
 public interface IApplicationTypeRepository : IRepository<ApplicationType>

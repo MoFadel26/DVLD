@@ -179,6 +179,9 @@ Content-Type: application/json
   "createdByUserId": 1
 }
 
+### Get All Licenses (newest first)
+GET {{baseUrl}}/api/licenses
+
 ### Get License by ID
 GET {{baseUrl}}/api/licenses/1
 

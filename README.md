@@ -119,6 +119,7 @@ After that, the license can be renewed, replaced (lost or damaged), detained, re
 | POST | `/api/licenses/detain` | Detain a license with a fine |
 | POST | `/api/licenses/release` | Release a detained license |
 | POST | `/api/licenses/international` | Issue an international license (needs a Class 3 license) |
+| GET | `/api/licenses` | List all licenses, newest first, with active and detained status |
 | GET | `/api/licenses/{id}` | Get a license |
 | GET | `/api/licenses/driver/{driverId}` | List a driver's licenses |
 

@@ -405,10 +405,22 @@ public class LicenseService : ILicenseService
         return list;
     }
 
+    public async Task<IReadOnlyList<LicenseResponseDto>> GetAllLicensesAsync(CancellationToken cancellationToken = default)
+    {
+        var licenses = await _unitOfWork.Licenses.GetAllWithDetailsAsync(cancellationToken);
+        var detainedIds = await _unitOfWork.DetainedLicenses.GetDetainedLicenseIdsAsync(cancellationToken);
+
+        return licenses.Select(l => ToDto(l, detainedIds.Contains(l.LicenseId))).ToList();
+    }
+
     private async Task<LicenseResponseDto> MapLicenseToDto(License license, CancellationToken cancellationToken)
     {
         bool isDetained = await _unitOfWork.DetainedLicenses.IsLicenseDetainedAsync(license.LicenseId, cancellationToken);
+        return ToDto(license, isDetained);
+    }
 
+    private static LicenseResponseDto ToDto(License license, bool isDetained)
+    {
         return new LicenseResponseDto(
             license.LicenseId,
             license.ApplicationId,

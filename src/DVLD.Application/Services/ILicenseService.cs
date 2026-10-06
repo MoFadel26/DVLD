@@ -13,4 +13,5 @@ public interface ILicenseService
     Task<InternationalLicenseResponseDto> IssueInternationalLicenseAsync(IssueInternationalLicenseDto dto, CancellationToken cancellationToken = default);
     Task<LicenseResponseDto> GetLicenseByIdAsync(int licenseId, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<LicenseResponseDto>> GetLicensesByDriverIdAsync(int driverId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<LicenseResponseDto>> GetAllLicensesAsync(CancellationToken cancellationToken = default);
 }
