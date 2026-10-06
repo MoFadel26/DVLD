@@ -15,3 +15,6 @@ Library/
 
 # OS
 .DS_Store
+
+# Impeccable design tool working files
+.impeccable/
