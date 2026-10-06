@@ -1,6 +1,6 @@
-import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
+import { useState, type FormEvent, type ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { api, ApiError, rememberLicense, useApi, type License } from '../api'
+import { api, ApiError, useApi, type License } from '../api'
 import { classIcons } from '../classIcons'
 import { Icon } from '../components/Icons'
 import { Fact, Loading, PageHead, Plate, RuleNotice } from '../components/ui'
@@ -14,10 +14,6 @@ export function LicenseDetail() {
   const { t, date, money, className } = useI18n()
   const id = Number(useParams().id)
   const license = useApi(() => api.license(id), [id])
-
-  useEffect(() => {
-    if (license.data) rememberLicense(license.data.licenseId)
-  }, [license.data])
 
   if (license.error) {
     return (
@@ -148,7 +144,6 @@ function Services({ license: l, onChanged }: { license: License; onChanged: () =
   }
 
   const openNew = (next: License) => {
-    rememberLicense(next.licenseId)
     navigate(`/licenses/${next.licenseId}`)
   }
 

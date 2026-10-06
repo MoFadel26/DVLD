@@ -3,7 +3,6 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
   api,
   ApiError,
-  rememberLicense,
   useApi,
   type LocalApplication,
   type TestAppointment,
@@ -153,7 +152,6 @@ export function ApplicationDetail() {
         <IssuePanel
           app={a}
           onIssued={(licenseId) => {
-            rememberLicense(licenseId)
             navigate(`/licenses/${licenseId}`)
           }}
         />

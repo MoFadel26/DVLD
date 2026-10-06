@@ -1,86 +1,81 @@
-import { useEffect, useState, type FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { api, forgetLicense, recentLicenseIds, type License } from '../api'
+import { useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { api, useApi, type License } from '../api'
 import { Icon } from '../components/Icons'
-import { Empty, PageHead, Plate } from '../components/ui'
+import { Empty, Loading, PageHead, Plate, RuleNotice } from '../components/ui'
 import { useI18n } from '../i18n'
+
+type StatusFilter = 'all' | 'active' | 'detained' | 'inactive'
+
+const filters: StatusFilter[] = ['all', 'active', 'detained', 'inactive']
+
+function statusOf(l: License): Exclude<StatusFilter, 'all'> {
+  return l.isDetained ? 'detained' : l.isActive ? 'active' : 'inactive'
+}
 
 export function Licenses() {
   const { t, date, className } = useI18n()
-  const navigate = useNavigate()
-  const [licenseId, setLicenseId] = useState('')
-  const [driverId, setDriverId] = useState('')
-  const [recent, setRecent] = useState<License[]>()
+  const licenses = useApi(api.licenses, [])
+  const [query, setQuery] = useState('')
+  const [params, setParams] = useSearchParams()
+  const raw = params.get('status')
+  const status = filters.includes(raw as StatusFilter) ? (raw as StatusFilter) : 'all'
 
-  useEffect(() => {
-    // Look up each remembered id; ids from an earlier API run that no longer exist are dropped.
-    Promise.all(
-      recentLicenseIds().map((id) =>
-        api.license(id).catch((err) => {
-          if (err.status === 404) forgetLicense(id)
-          return undefined
-        }),
-      ),
-    ).then((list) => setRecent(list.filter((x): x is License => Boolean(x))))
-  }, [])
-
-  const go = (path: string) => (e: FormEvent) => {
-    e.preventDefault()
-    navigate(path)
+  const list = licenses.data ?? []
+  const q = query.trim().toLowerCase()
+  const rows = list.filter(
+    (l) =>
+      (status === 'all' || statusOf(l) === status) &&
+      (!q ||
+        l.driverFullName.toLowerCase().includes(q) ||
+        l.nationalNo.toLowerCase().includes(q) ||
+        String(l.licenseId) === q.replace(/^lic-?/, '')),
+  )
+  const countFor = (f: StatusFilter) => (f === 'all' ? list.length : list.filter((l) => statusOf(l) === f).length)
+  const label: Record<StatusFilter, string> = {
+    all: t('filter.all'),
+    active: t('lic.active'),
+    detained: t('lic.detained'),
+    inactive: t('lic.inactive'),
   }
 
   return (
     <div className="page">
       <PageHead title={t('lic.title')} lede={t('lic.lede')} />
 
-      <div className="lookup">
-        <form className="lookup-form" onSubmit={go(`/licenses/${licenseId}`)}>
-          <label htmlFor="lic-id">{t('lic.byId')}</label>
-          <div className="lookup-row">
-            <input
-              id="lic-id"
-              inputMode="numeric"
-              pattern="[0-9]+"
-              required
-              dir="ltr"
-              value={licenseId}
-              onChange={(e) => setLicenseId(e.target.value.trim())}
-            />
-            <button type="submit" className="btn btn-primary">
-              <Icon name="search" size={18} />
-              {t('lic.open')}
+      <div className="toolbar">
+        <label className="search">
+          <Icon name="search" size={16} />
+          <span className="visually-hidden">{t('lic.search')}</span>
+          <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t('lic.search')} />
+        </label>
+        <div className="tabs" role="group" aria-label={t('lic.filter')}>
+          {filters.map((f) => (
+            <button
+              key={f}
+              type="button"
+              aria-pressed={status === f}
+              className="tab"
+              onClick={() => setParams(f === 'all' ? {} : { status: f })}
+            >
+              {label[f]}
+              <span className="tab-count">{licenses.data ? countFor(f) : '–'}</span>
             </button>
-          </div>
-        </form>
-        <form className="lookup-form" onSubmit={go(`/drivers/${driverId}`)}>
-          <label htmlFor="drv-id">{t('lic.byDriver')}</label>
-          <div className="lookup-row">
-            <input
-              id="drv-id"
-              inputMode="numeric"
-              pattern="[0-9]+"
-              required
-              dir="ltr"
-              value={driverId}
-              onChange={(e) => setDriverId(e.target.value.trim())}
-            />
-            <button type="submit" className="btn btn-quiet">
-              {t('lic.openDriver')}
-            </button>
-          </div>
-        </form>
+          ))}
+        </div>
       </div>
 
-      <section aria-labelledby="recent">
-        <div className="section-head">
-          <h2 id="recent">{t('lic.recent')}</h2>
-        </div>
-        {recent && recent.length > 0 ? (
-          <LicensesTable rows={recent} date={date} className={className} />
-        ) : (
-          recent && <Empty>{t('lic.recentEmpty')}</Empty>
-        )}
-      </section>
+      {licenses.error ? (
+        <RuleNotice error={licenses.error} onRetry={licenses.reload} />
+      ) : !licenses.data ? (
+        <Loading />
+      ) : list.length === 0 ? (
+        <Empty>{t('lic.empty')}</Empty>
+      ) : rows.length === 0 ? (
+        <Empty>{t('lic.noMatch')}</Empty>
+      ) : (
+        <LicensesTable rows={rows} date={date} className={className} />
+      )}
     </div>
   )
 }

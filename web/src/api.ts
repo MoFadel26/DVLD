@@ -211,6 +211,7 @@ export const api = {
 
   licenseClasses: () => request<LicenseClass[]>('GET', '/license-classes'),
 
+  licenses: () => request<License[]>('GET', '/licenses'),
   license: (id: number) => request<License>('GET', `/licenses/${id}`),
   driverLicenses: (driverId: number) => request<License[]>('GET', `/licenses/driver/${driverId}`),
   issueFirstTime: (localAppId: number, notes: string) =>
@@ -287,26 +288,4 @@ export function useApi<T>(load: () => Promise<T>, deps: unknown[]): Loadable<T> 
   }, [run, tick])
 
   return { data, error, loading, reload: () => setTick((n) => n + 1) }
-}
-
-// The licensing API has no endpoint that lists licenses, so license ids this
-// browser has seen are remembered locally to make them findable again.
-const RECENT_KEY = 'dvld.recentLicenses'
-
-export function rememberLicense(id: number) {
-  const ids = recentLicenseIds().filter((x) => x !== id)
-  localStorage.setItem(RECENT_KEY, JSON.stringify([id, ...ids].slice(0, 12)))
-}
-
-export function recentLicenseIds(): number[] {
-  try {
-    const parsed = JSON.parse(localStorage.getItem(RECENT_KEY) ?? '[]')
-    return Array.isArray(parsed) ? parsed.filter((x) => Number.isInteger(x)) : []
-  } catch {
-    return []
-  }
-}
-
-export function forgetLicense(id: number) {
-  localStorage.setItem(RECENT_KEY, JSON.stringify(recentLicenseIds().filter((x) => x !== id)))
 }

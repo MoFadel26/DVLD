@@ -1229,16 +1229,14 @@ legend {
   min-width: 0;
 }
 
-.field label,
-.lookup-form label {
+.field label {
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--text);
 }
 
 .field input,
-.field select,
-.lookup input {
+.field select {
   width: 100%;
   height: 36px;
   padding: 0 12px;
@@ -1251,14 +1249,12 @@ legend {
 }
 
 .field input:hover,
-.field select:hover,
-.lookup input:hover {
+.field select:hover {
   border-color: var(--border-strong);
 }
 
 .field input:focus,
-.field select:focus,
-.lookup input:focus {
+.field select:focus {
   outline: 0;
   border-color: var(--link);
   box-shadow: var(--ring);
@@ -1269,8 +1265,7 @@ legend {
   color: var(--text-2);
 }
 
-[dir='rtl'] .field input[dir='ltr'],
-[dir='rtl'] .lookup input[dir='ltr'] {
+[dir='rtl'] .field input[dir='ltr'] {
   text-align: right;
 }
 
@@ -1660,35 +1655,6 @@ html[lang='ar'] .test-head h2 {
 
 /* ---------- Licenses ---------- */
 
-.lookup {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-}
-
-.lookup-form {
-  display: grid;
-  gap: 8px;
-  padding: 24px;
-}
-
-.lookup-form + .lookup-form {
-  border-inline-start: 1px solid var(--border);
-}
-
-.lookup-row {
-  display: flex;
-  gap: 8px;
-}
-
-.lookup-row input {
-  flex: 1;
-  min-width: 0;
-}
-
 .license-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -1989,14 +1955,8 @@ html[lang='ar'] .test-head h2 {
   }
 
   .field-row,
-  .field-row-3,
-  .lookup {
+  .field-row-3 {
     grid-template-columns: minmax(0, 1fr);
-  }
-
-  .lookup-form + .lookup-form {
-    border-inline-start: 0;
-    border-top: 1px solid var(--border);
   }
 
   .facts-stack {
