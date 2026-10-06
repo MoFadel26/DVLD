@@ -3,11 +3,12 @@ import { NavLink, Outlet } from 'react-router-dom'
 import { useI18n } from '../i18n'
 import { Icon, type IconName } from './Icons'
 
-const nav: { to: string; key: 'nav.overview' | 'nav.people' | 'nav.applications' | 'nav.licenses' | 'nav.classes'; icon: IconName }[] = [
+const nav: { to: string; key: 'nav.overview' | 'nav.people' | 'nav.applications' | 'nav.licenses' | 'nav.drivers' | 'nav.classes'; icon: IconName }[] = [
   { to: '/', key: 'nav.overview', icon: 'home' },
   { to: '/people', key: 'nav.people', icon: 'person' },
   { to: '/applications', key: 'nav.applications', icon: 'form' },
   { to: '/licenses', key: 'nav.licenses', icon: 'card' },
+  { to: '/drivers', key: 'nav.drivers', icon: 'wheel' },
   { to: '/classes', key: 'nav.classes', icon: 'classes' },
 ]
 

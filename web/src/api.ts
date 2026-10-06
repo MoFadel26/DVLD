@@ -108,6 +108,16 @@ export type License = {
   createdByUserId: number
 }
 
+export type Driver = {
+  driverId: number
+  personId: number
+  fullName: string
+  nationalNo: string
+  createdDate: string
+  licenseCount: number
+  activeLicenseCount: number
+}
+
 export type DetainedLicense = {
   detainId: number
   licenseId: number
@@ -180,6 +190,10 @@ export const api = {
     request<Person>('POST', '/people', input),
   updatePerson: (id: number, input: PersonInput) => request<Person>('PUT', `/people/${id}`, input),
   deletePerson: (id: number) => request<void>('DELETE', `/people/${id}`),
+  personLicenses: (id: number) => request<License[]>('GET', `/people/${id}/licenses`),
+
+  drivers: () => request<Driver[]>('GET', '/drivers'),
+  driver: (id: number) => request<Driver>('GET', `/drivers/${id}`),
 
   applications: () => request<LocalApplication[]>('GET', '/applications/local-license'),
   application: (id: number) => request<LocalApplication>('GET', `/applications/local-license/${id}`),

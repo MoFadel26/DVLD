@@ -5,13 +5,15 @@ import { Icon } from '../components/Icons'
 import { Empty, Fact, Loading, PageHead, Plate, RuleNotice } from '../components/ui'
 import { useI18n } from '../i18n'
 import { ApplicationsTable } from './Applications'
+import { LicensesTable } from './Licenses'
 
 export function PersonDetail() {
-  const { t, date, country } = useI18n()
+  const { t, date, country, className } = useI18n()
   const navigate = useNavigate()
   const id = Number(useParams().id)
   const person = useApi(() => api.person(id), [id])
   const apps = useApi(api.applications, [])
+  const licenses = useApi(() => api.personLicenses(id), [id])
   const [deleteError, setDeleteError] = useState<ApiError>()
   const [deleting, setDeleting] = useState(false)
 
@@ -92,6 +94,21 @@ export function PersonDetail() {
           <Empty>{t('person.noApplications')}</Empty>
         ) : (
           <ApplicationsTable rows={mine} hideApplicant />
+        )}
+      </section>
+
+      <section aria-labelledby="person-licenses">
+        <div className="section-head">
+          <h2 id="person-licenses">{t('person.licenses')}</h2>
+        </div>
+        {licenses.error ? (
+          <RuleNotice error={licenses.error} onRetry={licenses.reload} />
+        ) : !licenses.data ? (
+          <Loading />
+        ) : licenses.data.length === 0 ? (
+          <Empty>{t('person.noLicenses')}</Empty>
+        ) : (
+          <LicensesTable rows={licenses.data} date={date} className={className} />
         )}
       </section>
 
