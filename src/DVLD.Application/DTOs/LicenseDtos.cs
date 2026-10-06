@@ -2,40 +2,33 @@ namespace DVLD.Application.DTOs;
 
 public record IssueFirstTimeLicenseDto(
     int LocalDrivingLicenseApplicationId,
-    string? Notes,
-    int CreatedByUserId
+    string? Notes
 );
 
 public record RenewLicenseDto(
     int LicenseId,
-    string? Notes,
-    int CreatedByUserId
+    string? Notes
 );
 
 public record ReplaceLostLicenseDto(
-    int LicenseId,
-    int CreatedByUserId
+    int LicenseId
 );
 
 public record ReplaceDamagedLicenseDto(
-    int LicenseId,
-    int CreatedByUserId
+    int LicenseId
 );
 
 public record DetainLicenseDto(
     int LicenseId,
-    decimal FineFees,
-    int CreatedByUserId
+    decimal FineFees
 );
 
 public record ReleaseLicenseDto(
-    int LicenseId,
-    int ReleasedByUserId
+    int LicenseId
 );
 
 public record IssueInternationalLicenseDto(
-    int LocalLicenseId,
-    int CreatedByUserId
+    int LocalLicenseId
 );
 
 public record LicenseResponseDto(

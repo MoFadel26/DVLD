@@ -17,6 +17,11 @@ public interface IRepository<T> where T : class
     void Delete(T entity);
 }
 
+public interface IUserRepository : IRepository<User>
+{
+    Task<User?> GetByUsernameAsync(string username, CancellationToken cancellationToken = default);
+}
+
 public interface ICountryRepository : IRepository<Country>
 {
 }
@@ -96,6 +101,7 @@ public interface ITestTypeRepository : IRepository<TestType>
 /// </summary>
 public interface IUnitOfWork
 {
+    IUserRepository Users { get; }
     ICountryRepository Countries { get; }
     IPersonRepository People { get; }
     IApplicationRepository Applications { get; }

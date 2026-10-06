@@ -10,7 +10,7 @@ public class VisionTestWorkflow : BaseTestWorkflow
 {
     public override EnTestType TestType => EnTestType.VisionTest;
 
-    public VisionTestWorkflow(IUnitOfWork unitOfWork) : base(unitOfWork)
+    public VisionTestWorkflow(IUnitOfWork unitOfWork, ICurrentUser currentUser) : base(unitOfWork, currentUser)
     {
     }
 

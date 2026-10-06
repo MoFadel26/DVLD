@@ -11,7 +11,7 @@ public class PracticalTestWorkflow : BaseTestWorkflow
 {
     public override EnTestType TestType => EnTestType.PracticalTest;
 
-    public PracticalTestWorkflow(IUnitOfWork unitOfWork) : base(unitOfWork)
+    public PracticalTestWorkflow(IUnitOfWork unitOfWork, ICurrentUser currentUser) : base(unitOfWork, currentUser)
     {
     }
 

@@ -6,15 +6,13 @@ public record ScheduleTestAppointmentDto(
     int LocalDrivingLicenseApplicationId,
     EnTestType TestType,
     DateTime AppointmentDate,
-    int CreatedByUserId,
     int? RetakeTestApplicationId = null
 );
 
 public record TakeTestDto(
     int TestAppointmentId,
     EnTestResult TestResult,
-    string? Notes,
-    int CreatedByUserId
+    string? Notes
 );
 
 public record TestAppointmentResponseDto(

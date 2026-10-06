@@ -9,6 +9,7 @@ public class DvldDbContext : DbContext
     {
     }
 
+    public DbSet<User> Users => Set<User>();
     public DbSet<Country> Countries => Set<Country>();
     public DbSet<Person> People => Set<Person>();
     public DbSet<LicenseClass> LicenseClasses => Set<LicenseClass>();

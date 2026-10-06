@@ -43,7 +43,7 @@ public class LicenseServiceTests
             new DetainedLicense { DetainId = 2, LicenseId = 2, FineFees = 20m, IsReleased = true });
         await context.SaveChangesAsync();
 
-        var service = new LicenseService(uow, new LicenseFactoryProvider(Array.Empty<ILicenseFactory>()), new NoOpDispatcher());
+        var service = new LicenseService(uow, new LicenseFactoryProvider(Array.Empty<ILicenseFactory>()), new NoOpDispatcher(), new TestCurrentUser());
 
         var licenses = await service.GetAllLicensesAsync();
 
@@ -69,7 +69,7 @@ public class LicenseServiceTests
         });
         await context.SaveChangesAsync();
 
-        var service = new LicenseService(uow, new LicenseFactoryProvider(Array.Empty<ILicenseFactory>()), new NoOpDispatcher());
+        var service = new LicenseService(uow, new LicenseFactoryProvider(Array.Empty<ILicenseFactory>()), new NoOpDispatcher(), new TestCurrentUser());
 
         Assert.Empty(await service.GetLicensesByPersonIdAsync(1));
         await Assert.ThrowsAsync<DVLD.Domain.Exceptions.EntityNotFoundException>(() => service.GetLicensesByPersonIdAsync(99));

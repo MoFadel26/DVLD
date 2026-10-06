@@ -93,3 +93,11 @@ public class ValidationFailedException : DomainException
     {
     }
 }
+
+public class InvalidCredentialsException : DomainException
+{
+    public InvalidCredentialsException()
+        : base("The username or password is incorrect.")
+    {
+    }
+}

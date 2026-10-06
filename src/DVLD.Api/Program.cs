@@ -1,7 +1,12 @@
+using DVLD.Api.Auth;
 using DVLD.Api.Middleware;
 using DVLD.Application;
+using DVLD.Application.Common.Interfaces;
 using DVLD.Infrastructure;
+using DVLD.Infrastructure.Auth;
 using DVLD.Infrastructure.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,12 +14,27 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container
 builder.Services.AddControllers();
 
-// Native ASP.NET Core OpenAPI (no Swagger)
-builder.Services.AddOpenApi();
+// Native ASP.NET Core OpenAPI (no Swagger), with bearer auth declared for Scalar
+builder.Services.AddOpenApi(options => options.AddDocumentTransformer<BearerSecuritySchemeTransformer>());
 
 // Clean Architecture Layers DI
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+
+// JWT authentication: every endpoint requires a signed-in user unless marked [AllowAnonymous]
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUser, HttpCurrentUser>();
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
+builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
+    .Configure<JwtSettings>((options, settings) =>
+    {
+        options.MapInboundClaims = false;
+        options.TokenValidationParameters = settings.ValidationParameters;
+    });
+builder.Services.AddAuthorization(options =>
+{
+    options.FallbackPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
+});
 
 var app = builder.Build();
 
@@ -25,21 +45,28 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 if (app.Environment.IsDevelopment())
 {
     // Native OpenAPI spec exposed at /openapi/v1.json
-    app.MapOpenApi();
+    app.MapOpenApi().AllowAnonymous();
     // Scalar interactive API reference UI exposed at /scalar/v1
-    app.MapScalarApiReference();
+    app.MapScalarApiReference().AllowAnonymous();
 }
 
 app.UseHttpsRedirection();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+if (app.Services.GetRequiredService<JwtSettings>().UsesGeneratedKey)
+{
+    app.Logger.LogWarning("Auth:JwtKey is not set; using a random signing key. Tokens stop working when the API restarts.");
+}
 
 // Seed Database on startup
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<DvldDbContext>();
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-    await DatabaseSeeder.SeedAsync(context, logger);
+    var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
+    await DatabaseSeeder.SeedAsync(context, logger, passwordHasher, builder.Configuration["Auth:SeedAdminPassword"]);
 }
 
 app.Run();

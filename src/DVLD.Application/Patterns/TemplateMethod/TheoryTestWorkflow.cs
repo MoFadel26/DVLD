@@ -11,7 +11,7 @@ public class TheoryTestWorkflow : BaseTestWorkflow
 {
     public override EnTestType TestType => EnTestType.TheoryTest;
 
-    public TheoryTestWorkflow(IUnitOfWork unitOfWork) : base(unitOfWork)
+    public TheoryTestWorkflow(IUnitOfWork unitOfWork, ICurrentUser currentUser) : base(unitOfWork, currentUser)
     {
     }
 

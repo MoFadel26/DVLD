@@ -42,7 +42,7 @@ The database is created and filled with sample data on startup.
    dotnet run --project src/DVLD.Api
    ```
 
-The `dvld_db` database and its tables are created on first run.
+The `dvld_db` database and its tables are created on first run. The API creates tables only when the database is new, so a `dvld_db` created before the `Users` table existed must be dropped once to pick it up.
 
 If the connection string is empty or contains `InMemory`, the API uses the in-memory database instead.
 
@@ -60,6 +60,32 @@ Scalar and the OpenAPI JSON are only available in the Development environment (t
 
 ---
 
+## Sign in
+
+Every endpoint except `POST /api/auth/login` needs a JWT in the `Authorization: Bearer <token>` header. The user who signs in is recorded as the creator of everything they do; request bodies no longer carry a user id.
+
+In Development the API seeds one account:
+
+| Username | Password |
+| :--- | :--- |
+| `admin` | `Admin@12345` (set by `Auth:SeedAdminPassword` in `appsettings.Development.json`) |
+
+```bash
+curl -s -X POST http://localhost:5000/api/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{"username":"admin","password":"Admin@12345"}'
+```
+
+In Scalar, paste the returned `token` into the Bearer auth field. In `DVLD.http`, run the sign-in request first.
+
+| Setting | Purpose |
+| :--- | :--- |
+| `Auth:SeedAdminPassword` | Password for the `admin` user created when there are no users. Without it, no user is created. |
+| `Auth:JwtKey` | Key that signs tokens (32+ bytes). Without it, a random key is used and tokens stop working when the API restarts. |
+| `Auth:TokenLifetimeMinutes` | How long a token lasts. Default 480. |
+
+---
+
 ## How a license is issued
 
 1. Register a person.
@@ -72,6 +98,13 @@ After that, the license can be renewed, replaced (lost or damaged), detained, re
 ---
 
 ## Endpoints
+
+### Auth
+
+| Method | Route | Purpose |
+| :--- | :--- | :--- |
+| POST | `/api/auth/login` | Sign in with a username and password; returns a JWT |
+| GET | `/api/auth/me` | The signed-in user |
 
 ### Countries
 

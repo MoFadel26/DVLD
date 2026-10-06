@@ -65,6 +65,7 @@ public static class DependencyInjection
             return new LoggingApplicationServiceDecorator(performanceDecorator, logLogger);
         });
 
+        services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<ICountryService, CountryService>();
         services.AddScoped<IDriverService, DriverService>();
         services.AddScoped<IPersonService, PersonService>();

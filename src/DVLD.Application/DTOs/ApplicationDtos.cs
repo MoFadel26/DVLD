@@ -4,8 +4,7 @@ namespace DVLD.Application.DTOs;
 
 public record CreateNewLocalLicenseApplicationDto(
     int ApplicantPersonId,
-    int LicenseClassId,
-    int CreatedByUserId
+    int LicenseClassId
 );
 
 public record ApplicationResponseDto(

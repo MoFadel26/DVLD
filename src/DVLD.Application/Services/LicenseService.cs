@@ -14,12 +14,15 @@ public class LicenseService : ILicenseService
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILicenseFactoryProvider _factoryProvider;
     private readonly IDomainEventDispatcher _eventDispatcher;
+    private readonly ICurrentUser _currentUser;
 
     public LicenseService(
         IUnitOfWork unitOfWork,
         ILicenseFactoryProvider factoryProvider,
-        IDomainEventDispatcher eventDispatcher)
+        IDomainEventDispatcher eventDispatcher,
+        ICurrentUser currentUser)
     {
+        _currentUser = currentUser;
         _unitOfWork = unitOfWork;
         _factoryProvider = factoryProvider;
         _eventDispatcher = eventDispatcher;
@@ -52,7 +55,7 @@ public class LicenseService : ILicenseService
             {
                 PersonId = personId,
                 CreatedDate = DateTime.UtcNow,
-                CreatedByUserId = dto.CreatedByUserId
+                CreatedByUserId = _currentUser.UserId
             };
             await _unitOfWork.Drivers.AddAsync(driver, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -66,7 +69,7 @@ public class LicenseService : ILicenseService
             localApp.LicenseClassId,
             localApp.LicenseClass,
             Notes: dto.Notes,
-            CreatedByUserId: dto.CreatedByUserId
+            CreatedByUserId: _currentUser.UserId
         );
 
         var license = await factory.CreateLicenseAsync(context, cancellationToken);
@@ -111,7 +114,7 @@ public class LicenseService : ILicenseService
             ApplicationStatus = EnApplicationStatus.Completed,
             LastStatusDate = DateTime.UtcNow,
             PaidFees = 5.00m + oldLicense.LicenseClass.ClassFees,
-            CreatedByUserId = dto.CreatedByUserId
+            CreatedByUserId = _currentUser.UserId
         };
 
         await _unitOfWork.Applications.AddAsync(baseApplication, cancellationToken);
@@ -126,7 +129,7 @@ public class LicenseService : ILicenseService
             oldLicense.LicenseClass,
             PreviousLicense: oldLicense,
             Notes: dto.Notes,
-            CreatedByUserId: dto.CreatedByUserId
+            CreatedByUserId: _currentUser.UserId
         );
 
         var newLicense = await factory.CreateLicenseAsync(context, cancellationToken);
@@ -159,7 +162,7 @@ public class LicenseService : ILicenseService
             ApplicationStatus = EnApplicationStatus.Completed,
             LastStatusDate = DateTime.UtcNow,
             PaidFees = 5.00m + 10.00m, // Application fee + lost replacement fee
-            CreatedByUserId = dto.CreatedByUserId
+            CreatedByUserId = _currentUser.UserId
         };
 
         await _unitOfWork.Applications.AddAsync(baseApplication, cancellationToken);
@@ -173,7 +176,7 @@ public class LicenseService : ILicenseService
             oldLicense.LicenseClass,
             PreviousLicense: oldLicense,
             Notes: "Replaced lost license",
-            CreatedByUserId: dto.CreatedByUserId
+            CreatedByUserId: _currentUser.UserId
         );
 
         var newLicense = await factory.CreateLicenseAsync(context, cancellationToken);
@@ -206,7 +209,7 @@ public class LicenseService : ILicenseService
             ApplicationStatus = EnApplicationStatus.Completed,
             LastStatusDate = DateTime.UtcNow,
             PaidFees = 5.00m + 5.00m, // Application fee + damaged replacement fee
-            CreatedByUserId = dto.CreatedByUserId
+            CreatedByUserId = _currentUser.UserId
         };
 
         await _unitOfWork.Applications.AddAsync(baseApplication, cancellationToken);
@@ -220,7 +223,7 @@ public class LicenseService : ILicenseService
             oldLicense.LicenseClass,
             PreviousLicense: oldLicense,
             Notes: "Replaced damaged license",
-            CreatedByUserId: dto.CreatedByUserId
+            CreatedByUserId: _currentUser.UserId
         );
 
         var newLicense = await factory.CreateLicenseAsync(context, cancellationToken);
@@ -256,7 +259,7 @@ public class LicenseService : ILicenseService
             LicenseId = dto.LicenseId,
             DetainDate = DateTime.UtcNow,
             FineFees = dto.FineFees,
-            CreatedByUserId = dto.CreatedByUserId,
+            CreatedByUserId = _currentUser.UserId,
             IsReleased = false
         };
 
@@ -293,13 +296,13 @@ public class LicenseService : ILicenseService
             ApplicationStatus = EnApplicationStatus.Completed,
             LastStatusDate = DateTime.UtcNow,
             PaidFees = 5.00m + detained.FineFees,
-            CreatedByUserId = dto.ReleasedByUserId
+            CreatedByUserId = _currentUser.UserId
         };
 
         await _unitOfWork.Applications.AddAsync(releaseApp, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        detained.Release(releaseApp.ApplicationId, dto.ReleasedByUserId, DateTime.UtcNow);
+        detained.Release(releaseApp.ApplicationId, _currentUser.UserId, DateTime.UtcNow);
         _unitOfWork.DetainedLicenses.Update(detained);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -352,7 +355,7 @@ public class LicenseService : ILicenseService
             ApplicationStatus = EnApplicationStatus.Completed,
             LastStatusDate = DateTime.UtcNow,
             PaidFees = 5.00m + 50.00m,
-            CreatedByUserId = dto.CreatedByUserId
+            CreatedByUserId = _currentUser.UserId
         };
 
         await _unitOfWork.Applications.AddAsync(application, cancellationToken);
@@ -366,7 +369,7 @@ public class LicenseService : ILicenseService
             IssueDate = DateTime.UtcNow,
             ExpirationDate = DateTime.UtcNow.AddYears(1), // 1 year validity
             IsActive = true,
-            CreatedByUserId = dto.CreatedByUserId
+            CreatedByUserId = _currentUser.UserId
         };
 
         await _unitOfWork.InternationalLicenses.AddAsync(internationalLicense, cancellationToken);

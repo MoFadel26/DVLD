@@ -34,6 +34,8 @@ public class ExceptionHandlingMiddleware
 
         var (statusCode, title) = exception switch
         {
+            InvalidCredentialsException => (HttpStatusCode.Unauthorized, "Invalid Credentials"),
+            UnauthorizedAccessException => (HttpStatusCode.Unauthorized, "Unauthorized"),
             EntityNotFoundException => (HttpStatusCode.NotFound, "Resource Not Found"),
             AgeRequirementNotMetException => (HttpStatusCode.BadRequest, "Age Requirement Not Met"),
             ActiveLicenseAlreadyExistsException => (HttpStatusCode.Conflict, "Active License Already Exists"),

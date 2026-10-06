@@ -1,3 +1,4 @@
+using DVLD.Application.Common.Interfaces;
 using DVLD.Domain.Entities;
 using DVLD.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -7,11 +8,30 @@ namespace DVLD.Infrastructure.Data;
 
 public static class DatabaseSeeder
 {
-    public static async Task SeedAsync(DvldDbContext context, ILogger logger)
+    public static async Task SeedAsync(DvldDbContext context, ILogger logger, IPasswordHasher passwordHasher, string? adminPassword)
     {
         try
         {
             await context.Database.EnsureCreatedAsync();
+
+            // Seed the admin account if there are no users
+            if (!await context.Users.AnyAsync())
+            {
+                if (string.IsNullOrWhiteSpace(adminPassword))
+                {
+                    logger.LogWarning("No users exist and Auth:SeedAdminPassword is not set, so nobody can sign in.");
+                }
+                else
+                {
+                    logger.LogInformation("Seeding the admin user...");
+                    context.Users.Add(new User
+                    {
+                        Username = "admin",
+                        PasswordHash = passwordHasher.Hash(adminPassword)
+                    });
+                    await context.SaveChangesAsync();
+                }
+            }
 
             // Seed Countries if empty
             if (!await context.Countries.AnyAsync())

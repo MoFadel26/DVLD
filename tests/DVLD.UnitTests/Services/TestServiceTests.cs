@@ -49,21 +49,21 @@ public class TestServiceTests
 
         var resolver = new TestWorkflowResolver(new ITestWorkflow[]
         {
-            new VisionTestWorkflow(uow),
-            new TheoryTestWorkflow(uow),
-            new PracticalTestWorkflow(uow)
+            new VisionTestWorkflow(uow, new TestCurrentUser { UserId = 7 }),
+            new TheoryTestWorkflow(uow, new TestCurrentUser { UserId = 7 }),
+            new PracticalTestWorkflow(uow, new TestCurrentUser { UserId = 7 })
         });
         var service = new TestService(uow, resolver, new NoOpDispatcher());
         var when = DateTime.UtcNow.AddDays(1);
 
         // Fail, then pass on the retake.
-        var first = await service.ScheduleAppointmentAsync(new ScheduleTestAppointmentDto(1, EnTestType.VisionTest, when, 1));
-        await service.TakeTestAsync(EnTestType.VisionTest, new TakeTestDto(first.TestAppointmentId, EnTestResult.Fail, "Needs glasses", 1));
-        var second = await service.ScheduleAppointmentAsync(new ScheduleTestAppointmentDto(1, EnTestType.VisionTest, when, 1));
-        await service.TakeTestAsync(EnTestType.VisionTest, new TakeTestDto(second.TestAppointmentId, EnTestResult.Pass, null, 1));
+        var first = await service.ScheduleAppointmentAsync(new ScheduleTestAppointmentDto(1, EnTestType.VisionTest, when));
+        await service.TakeTestAsync(EnTestType.VisionTest, new TakeTestDto(first.TestAppointmentId, EnTestResult.Fail, "Needs glasses"));
+        var second = await service.ScheduleAppointmentAsync(new ScheduleTestAppointmentDto(1, EnTestType.VisionTest, when));
+        await service.TakeTestAsync(EnTestType.VisionTest, new TakeTestDto(second.TestAppointmentId, EnTestResult.Pass, null));
 
         // Booked but not taken yet.
-        await service.ScheduleAppointmentAsync(new ScheduleTestAppointmentDto(1, EnTestType.TheoryTest, when, 1));
+        await service.ScheduleAppointmentAsync(new ScheduleTestAppointmentDto(1, EnTestType.TheoryTest, when));
 
         var vision = await service.GetAppointmentsAsync(1, EnTestType.VisionTest);
         var theory = await service.GetAppointmentsAsync(1, EnTestType.TheoryTest);
@@ -71,5 +71,6 @@ public class TestServiceTests
         Assert.Equal(new[] { "Fail", "Pass" }, vision.Select(a => a.TestResult));
         Assert.Equal("Needs glasses", vision[0].ResultNotes);
         Assert.Null(Assert.Single(theory).TestResult);
+        Assert.Equal(7, first.CreatedByUserId); // taken from the signed-in user, not the request
     }
 }

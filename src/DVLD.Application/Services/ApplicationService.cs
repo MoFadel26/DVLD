@@ -16,13 +16,16 @@ public class ApplicationService : IApplicationService
     private readonly INewApplicationValidationPipeline _validationPipeline;
     private readonly IFeeCalculationContext _feeContext;
     private readonly IDomainEventDispatcher _eventDispatcher;
+    private readonly ICurrentUser _currentUser;
 
     public ApplicationService(
         IUnitOfWork unitOfWork,
         INewApplicationValidationPipeline validationPipeline,
         IFeeCalculationContext feeContext,
-        IDomainEventDispatcher eventDispatcher)
+        IDomainEventDispatcher eventDispatcher,
+        ICurrentUser currentUser)
     {
+        _currentUser = currentUser;
         _unitOfWork = unitOfWork;
         _validationPipeline = validationPipeline;
         _feeContext = feeContext;
@@ -49,7 +52,7 @@ public class ApplicationService : IApplicationService
             ApplicationStatus = EnApplicationStatus.New,
             LastStatusDate = DateTime.UtcNow,
             PaidFees = 5.00m, // Application base fee is $5
-            CreatedByUserId = dto.CreatedByUserId
+            CreatedByUserId = _currentUser.UserId
         };
 
         await _unitOfWork.Applications.AddAsync(baseApplication, cancellationToken);

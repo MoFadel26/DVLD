@@ -4,6 +4,19 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace DVLD.Infrastructure.Configurations;
 
+public class UserConfiguration : IEntityTypeConfiguration<User>
+{
+    public void Configure(EntityTypeBuilder<User> builder)
+    {
+        builder.ToTable("Users");
+        builder.HasKey(u => u.UserId);
+        builder.Property(u => u.UserId).ValueGeneratedOnAdd();
+        builder.Property(u => u.Username).IsRequired().HasMaxLength(50);
+        builder.HasIndex(u => u.Username).IsUnique();
+        builder.Property(u => u.PasswordHash).IsRequired().HasMaxLength(200);
+    }
+}
+
 public class CountryConfiguration : IEntityTypeConfiguration<Country>
 {
     public void Configure(EntityTypeBuilder<Country> builder)

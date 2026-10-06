@@ -61,6 +61,7 @@ public static class TestDbContextFactory
 
         context.SaveChanges();
 
+        var userRepo = new UserRepository(context);
         var countryRepo = new CountryRepository(context);
         var peopleRepo = new PersonRepository(context);
         var appRepo = new ApplicationRepository(context);
@@ -77,6 +78,7 @@ public static class TestDbContextFactory
 
         var uow = new UnitOfWork(
             context,
+            userRepo,
             countryRepo,
             peopleRepo,
             appRepo,

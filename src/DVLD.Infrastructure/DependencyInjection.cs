@@ -1,4 +1,5 @@
 using DVLD.Application.Common.Interfaces;
+using DVLD.Infrastructure.Auth;
 using DVLD.Infrastructure.Data;
 using DVLD.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -27,6 +28,7 @@ public static class DependencyInjection
 
         // Register Repositories
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+        services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ICountryRepository, CountryRepository>();
         services.AddScoped<IPersonRepository, PersonRepository>();
         services.AddScoped<IApplicationRepository, ApplicationRepository>();
@@ -43,6 +45,11 @@ public static class DependencyInjection
 
         // Register Unit of Work
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        // Authentication: password hashing and JWT creation (validation is set up in the API)
+        services.AddSingleton<JwtSettings>();
+        services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
+        services.AddSingleton<ITokenService, JwtTokenService>();
 
         return services;
     }

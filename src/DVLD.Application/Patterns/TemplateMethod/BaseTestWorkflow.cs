@@ -14,12 +14,14 @@ namespace DVLD.Application.Patterns.TemplateMethod;
 public abstract class BaseTestWorkflow : ITestWorkflow
 {
     protected readonly IUnitOfWork UnitOfWork;
+    protected readonly ICurrentUser CurrentUser;
 
     public abstract EnTestType TestType { get; }
 
-    protected BaseTestWorkflow(IUnitOfWork unitOfWork)
+    protected BaseTestWorkflow(IUnitOfWork unitOfWork, ICurrentUser currentUser)
     {
         UnitOfWork = unitOfWork;
+        CurrentUser = currentUser;
     }
 
     /// <summary>
@@ -62,7 +64,7 @@ public abstract class BaseTestWorkflow : ITestWorkflow
             .ForLocalApplication(dto.LocalDrivingLicenseApplicationId)
             .ScheduledOn(dto.AppointmentDate)
             .WithFees(testFee)
-            .CreatedBy(dto.CreatedByUserId)
+            .CreatedBy(CurrentUser.UserId)
             .WithRetakeApplication(dto.RetakeTestApplicationId)
             .Build();
 
@@ -106,7 +108,7 @@ public abstract class BaseTestWorkflow : ITestWorkflow
             TestAppointmentId = dto.TestAppointmentId,
             TestResult = dto.TestResult,
             Notes = dto.Notes,
-            CreatedByUserId = dto.CreatedByUserId,
+            CreatedByUserId = CurrentUser.UserId,
             CreatedDate = DateTime.UtcNow
         };
 

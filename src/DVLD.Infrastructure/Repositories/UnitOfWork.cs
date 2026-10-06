@@ -10,6 +10,7 @@ public class UnitOfWork : IUnitOfWork
 {
     private readonly DvldDbContext _context;
 
+    public IUserRepository Users { get; }
     public ICountryRepository Countries { get; }
     public IPersonRepository People { get; }
     public IApplicationRepository Applications { get; }
@@ -26,6 +27,7 @@ public class UnitOfWork : IUnitOfWork
 
     public UnitOfWork(
         DvldDbContext context,
+        IUserRepository users,
         ICountryRepository countries,
         IPersonRepository people,
         IApplicationRepository applications,
@@ -41,6 +43,7 @@ public class UnitOfWork : IUnitOfWork
         ITestTypeRepository testTypes)
     {
         _context = context;
+        Users = users;
         Countries = countries;
         People = people;
         Applications = applications;

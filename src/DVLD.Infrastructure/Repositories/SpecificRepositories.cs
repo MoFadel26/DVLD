@@ -6,6 +6,19 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DVLD.Infrastructure.Repositories;
 
+public class UserRepository : Repository<User>, IUserRepository
+{
+    public UserRepository(DvldDbContext context) : base(context)
+    {
+    }
+
+    public async Task<User?> GetByUsernameAsync(string username, CancellationToken cancellationToken = default)
+    {
+        string normalized = username.ToLower();
+        return await DbSet.FirstOrDefaultAsync(u => u.Username.ToLower() == normalized, cancellationToken);
+    }
+}
+
 public class CountryRepository : Repository<Country>, ICountryRepository
 {
     public CountryRepository(DvldDbContext context) : base(context)

@@ -49,9 +49,9 @@ public class TestWorkflowTemplateMethodTests
 
         var workflows = new ITestWorkflow[]
         {
-            new VisionTestWorkflow(uow),
-            new TheoryTestWorkflow(uow),
-            new PracticalTestWorkflow(uow)
+            new VisionTestWorkflow(uow, new TestCurrentUser()),
+            new TheoryTestWorkflow(uow, new TestCurrentUser()),
+            new PracticalTestWorkflow(uow, new TestCurrentUser())
         };
         var resolver = new TestWorkflowResolver(workflows);
 
@@ -67,16 +67,14 @@ public class TestWorkflowTemplateMethodTests
         var scheduleDto = new ScheduleTestAppointmentDto(
             localApp.LocalDrivingLicenseApplicationId,
             EnTestType.VisionTest,
-            DateTime.UtcNow.AddDays(1),
-            CreatedByUserId: 1
-        );
+            DateTime.UtcNow.AddDays(1));
 
         var appointment = await visionWorkflow.ScheduleAppointmentAsync(scheduleDto);
         Assert.NotNull(appointment);
         Assert.Equal(10m, appointment.PaidFees); // Vision fee $10
         Assert.False(appointment.IsLocked);
 
-        var takeDto = new TakeTestDto(appointment.TestAppointmentId, EnTestResult.Pass, "Good vision", 1);
+        var takeDto = new TakeTestDto(appointment.TestAppointmentId, EnTestResult.Pass, "Good vision");
         var result = await visionWorkflow.RecordTestResultAsync(takeDto);
 
         Assert.Equal("Pass", result.TestResult);
@@ -91,9 +89,7 @@ public class TestWorkflowTemplateMethodTests
         var scheduleDto = new ScheduleTestAppointmentDto(
             localApp.LocalDrivingLicenseApplicationId,
             EnTestType.TheoryTest,
-            DateTime.UtcNow.AddDays(1),
-            CreatedByUserId: 1
-        );
+            DateTime.UtcNow.AddDays(1));
 
         var ex = await Assert.ThrowsAsync<PrerequisiteTestNotPassedTestException>(
             () => theoryWorkflow.ScheduleAppointmentAsync(scheduleDto));
@@ -111,12 +107,12 @@ public class TestWorkflowTemplateMethodTests
 
         // 1. Pass Vision Test
         var visionAppt = await visionWorkflow.ScheduleAppointmentAsync(new ScheduleTestAppointmentDto(
-            localApp.LocalDrivingLicenseApplicationId, EnTestType.VisionTest, DateTime.UtcNow.AddDays(1), 1));
-        await visionWorkflow.RecordTestResultAsync(new TakeTestDto(visionAppt.TestAppointmentId, EnTestResult.Pass, null, 1));
+            localApp.LocalDrivingLicenseApplicationId, EnTestType.VisionTest, DateTime.UtcNow.AddDays(1)));
+        await visionWorkflow.RecordTestResultAsync(new TakeTestDto(visionAppt.TestAppointmentId, EnTestResult.Pass, null));
 
         // 2. Schedule Theory Test
         var theoryAppt = await theoryWorkflow.ScheduleAppointmentAsync(new ScheduleTestAppointmentDto(
-            localApp.LocalDrivingLicenseApplicationId, EnTestType.TheoryTest, DateTime.UtcNow.AddDays(2), 1));
+            localApp.LocalDrivingLicenseApplicationId, EnTestType.TheoryTest, DateTime.UtcNow.AddDays(2)));
 
         Assert.NotNull(theoryAppt);
         Assert.Equal(20m, theoryAppt.PaidFees); // Theory fee $20
@@ -131,12 +127,12 @@ public class TestWorkflowTemplateMethodTests
 
         // 1. Pass Vision Test only
         var visionAppt = await visionWorkflow.ScheduleAppointmentAsync(new ScheduleTestAppointmentDto(
-            localApp.LocalDrivingLicenseApplicationId, EnTestType.VisionTest, DateTime.UtcNow.AddDays(1), 1));
-        await visionWorkflow.RecordTestResultAsync(new TakeTestDto(visionAppt.TestAppointmentId, EnTestResult.Pass, null, 1));
+            localApp.LocalDrivingLicenseApplicationId, EnTestType.VisionTest, DateTime.UtcNow.AddDays(1)));
+        await visionWorkflow.RecordTestResultAsync(new TakeTestDto(visionAppt.TestAppointmentId, EnTestResult.Pass, null));
 
         // 2. Try Practical Test directly without Theory Test
         var practicalScheduleDto = new ScheduleTestAppointmentDto(
-            localApp.LocalDrivingLicenseApplicationId, EnTestType.PracticalTest, DateTime.UtcNow.AddDays(3), 1);
+            localApp.LocalDrivingLicenseApplicationId, EnTestType.PracticalTest, DateTime.UtcNow.AddDays(3));
 
         var ex = await Assert.ThrowsAsync<PrerequisiteTestNotPassedTestException>(
             () => practicalWorkflow.ScheduleAppointmentAsync(practicalScheduleDto));
