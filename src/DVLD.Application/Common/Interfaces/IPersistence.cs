@@ -17,6 +17,10 @@ public interface IRepository<T> where T : class
     void Delete(T entity);
 }
 
+public interface ICountryRepository : IRepository<Country>
+{
+}
+
 public interface IPersonRepository : IRepository<Person>
 {
     Task<Person?> GetByNationalNoAsync(string nationalNo, CancellationToken cancellationToken = default);
@@ -88,6 +92,7 @@ public interface ITestTypeRepository : IRepository<TestType>
 /// </summary>
 public interface IUnitOfWork
 {
+    ICountryRepository Countries { get; }
     IPersonRepository People { get; }
     IApplicationRepository Applications { get; }
     ILocalDrivingLicenseApplicationRepository LocalApplications { get; }

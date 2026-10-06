@@ -27,6 +27,7 @@ public static class DependencyInjection
 
         // Register Repositories
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+        services.AddScoped<ICountryRepository, CountryRepository>();
         services.AddScoped<IPersonRepository, PersonRepository>();
         services.AddScoped<IApplicationRepository, ApplicationRepository>();
         services.AddScoped<ILocalDrivingLicenseApplicationRepository, LocalDrivingLicenseApplicationRepository>();

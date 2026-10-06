@@ -6,6 +6,18 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DVLD.Infrastructure.Repositories;
 
+public class CountryRepository : Repository<Country>, ICountryRepository
+{
+    public CountryRepository(DvldDbContext context) : base(context)
+    {
+    }
+
+    public override async Task<IReadOnlyList<Country>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        return await DbSet.OrderBy(c => c.CountryName).ToListAsync(cancellationToken);
+    }
+}
+
 public class PersonRepository : Repository<Person>, IPersonRepository
 {
     public PersonRepository(DvldDbContext context) : base(context)

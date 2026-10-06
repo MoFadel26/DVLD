@@ -73,6 +73,12 @@ After that, the license can be renewed, replaced (lost or damaged), detained, re
 
 ## Endpoints
 
+### Countries
+
+| Method | Route | Purpose |
+| :--- | :--- | :--- |
+| GET | `/api/countries` | List countries (for a person's nationality) |
+
 ### People
 
 | Method | Route | Purpose |

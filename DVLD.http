@@ -13,6 +13,9 @@ GET {{baseUrl}}/api/license-classes
 ### Get License Class by ID (Class 3 - Standard Car)
 GET {{baseUrl}}/api/license-classes/3
 
+### Get All Countries (nationality choices for a person)
+GET {{baseUrl}}/api/countries
+
 ### ==========================================
 ### 3. PEOPLE
 ### ==========================================
