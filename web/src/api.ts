@@ -1,7 +1,34 @@
 import { useCallback, useEffect, useState } from 'react'
 
-// There is no authentication in the API; every write is attributed to this user.
-export const CURRENT_USER_ID = 1
+export type User = {
+  userId: number
+  username: string
+}
+
+export type Session = {
+  token: string
+  expiresAt: string
+  user: User
+}
+
+const SESSION_KEY = 'dvld.session'
+
+/** Fired when the API rejects the stored token, so the app can return to the sign-in page. */
+export const SESSION_EXPIRED_EVENT = 'dvld:session-expired'
+
+export function getSession(): Session | null {
+  try {
+    const session = JSON.parse(localStorage.getItem(SESSION_KEY) ?? 'null') as Session | null
+    return session && new Date(session.expiresAt) > new Date() ? session : null
+  } catch {
+    return null
+  }
+}
+
+export function setSession(session: Session | null) {
+  if (session) localStorage.setItem(SESSION_KEY, JSON.stringify(session))
+  else localStorage.removeItem(SESSION_KEY)
+}
 
 export type Person = {
   personId: number
@@ -152,15 +179,25 @@ export class ApiError extends Error {
 }
 
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
+  const headers: Record<string, string> = {}
+  if (body !== undefined) headers['Content-Type'] = 'application/json'
+  const session = getSession()
+  if (session) headers.Authorization = `Bearer ${session.token}`
+
   let res: Response
   try {
     res = await fetch(`/api${path}`, {
       method,
-      headers: body === undefined ? undefined : { 'Content-Type': 'application/json' },
+      headers,
       body: body === undefined ? undefined : JSON.stringify(body),
     })
   } catch {
     throw new ApiError(0, 'Network', '')
+  }
+
+  if (res.status === 401 && path !== '/auth/login') {
+    setSession(null)
+    window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT))
   }
 
   if (!res.ok) {
@@ -181,6 +218,8 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 }
 
 export const api = {
+  login: (username: string, password: string) => request<Session>('POST', '/auth/login', { username, password }),
+
   countries: () => request<Country[]>('GET', '/countries'),
   people: () => request<Person[]>('GET', '/people'),
   person: (id: number) => request<Person>('GET', `/people/${id}`),
@@ -201,7 +240,6 @@ export const api = {
     request<LocalApplication>('POST', '/applications/local-license', {
       applicantPersonId: personId,
       licenseClassId,
-      createdByUserId: CURRENT_USER_ID,
     }),
   cancelApplication: (applicationId: number) =>
     request<void>('PUT', `/applications/${applicationId}/cancel`),
@@ -213,14 +251,12 @@ export const api = {
       localDrivingLicenseApplicationId: localAppId,
       testType,
       appointmentDate,
-      createdByUserId: CURRENT_USER_ID,
     }),
   takeTest: (testType: TestType, appointmentId: number, pass: boolean, notes: string) =>
     request<TestResult>('POST', `/tests/${testType}/take`, {
       testAppointmentId: appointmentId,
       testResult: pass ? 1 : 0,
       notes: notes || null,
-      createdByUserId: CURRENT_USER_ID,
     }),
 
   licenseClasses: () => request<LicenseClass[]>('GET', '/license-classes'),
@@ -232,36 +268,30 @@ export const api = {
     request<License>('POST', '/licenses/issue-first-time', {
       localDrivingLicenseApplicationId: localAppId,
       notes: notes || null,
-      createdByUserId: CURRENT_USER_ID,
     }),
   renew: (licenseId: number, notes: string) =>
     request<License>('POST', '/licenses/renew', {
       licenseId,
       notes: notes || null,
-      createdByUserId: CURRENT_USER_ID,
     }),
   replaceLost: (licenseId: number) =>
-    request<License>('POST', '/licenses/replace-lost', { licenseId, createdByUserId: CURRENT_USER_ID }),
+    request<License>('POST', '/licenses/replace-lost', { licenseId }),
   replaceDamaged: (licenseId: number) =>
     request<License>('POST', '/licenses/replace-damaged', {
       licenseId,
-      createdByUserId: CURRENT_USER_ID,
     }),
   detain: (licenseId: number, fineFees: number) =>
     request<DetainedLicense>('POST', '/licenses/detain', {
       licenseId,
       fineFees,
-      createdByUserId: CURRENT_USER_ID,
     }),
   release: (licenseId: number) =>
     request<DetainedLicense>('POST', '/licenses/release', {
       licenseId,
-      releasedByUserId: CURRENT_USER_ID,
     }),
   international: (localLicenseId: number) =>
     request<InternationalLicense>('POST', '/licenses/international', {
       localLicenseId,
-      createdByUserId: CURRENT_USER_ID,
     }),
 }
 

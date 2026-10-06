@@ -113,6 +113,12 @@ const paths = {
     </>
   ),
   moon: <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" />,
+  logout: (
+    <>
+      <path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4" />
+      <path d="M10 16l-4-4 4-4M6 12h10" />
+    </>
+  ),
   alert: (
     <>
       <circle cx="12" cy="12" r="9" />

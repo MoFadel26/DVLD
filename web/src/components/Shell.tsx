@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
+import { useAuth } from '../auth'
 import { useI18n } from '../i18n'
 import { Icon, type IconName } from './Icons'
 
@@ -38,6 +39,7 @@ function useTheme() {
 export function Shell() {
   const { t, lang, setLang } = useI18n()
   const { theme, toggle } = useTheme()
+  const { user, signOut } = useAuth()
 
   return (
     <div className="shell">
@@ -82,7 +84,19 @@ export function Shell() {
               <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={16} />
             </button>
           </div>
-          <p className="sidebar-note">{t('demo.note')}</p>
+          {user && (
+            <div className="user-row">
+              <span className="user-avatar" aria-hidden="true">
+                {user.username.slice(0, 1).toUpperCase()}
+              </span>
+              <span className="user-name" dir="ltr">
+                {user.username}
+              </span>
+              <button type="button" className="toggle toggle-icon" onClick={signOut} aria-label={t('auth.signOut')} title={t('auth.signOut')}>
+                <Icon name="logout" size={16} className="flip-rtl" />
+              </button>
+            </div>
+          )}
         </div>
       </aside>
 

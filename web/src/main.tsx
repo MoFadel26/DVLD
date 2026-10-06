@@ -6,13 +6,16 @@ import '@fontsource-variable/geist-mono'
 import '@fontsource-variable/noto-sans-arabic'
 import './styles.css'
 import App from './App.tsx'
+import { AuthProvider } from './components/AuthProvider.tsx'
 import { I18nProvider } from './components/I18nProvider.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <I18nProvider>
-        <App />
+        <AuthProvider>
+          <App />
+        </AuthProvider>
       </I18nProvider>
     </BrowserRouter>
   </StrictMode>,

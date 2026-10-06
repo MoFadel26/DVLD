@@ -1,4 +1,5 @@
 import { Route, Routes } from 'react-router-dom'
+import { RequireAuth } from './components/RequireAuth'
 import { Shell } from './components/Shell'
 import { ApplicationDetail } from './pages/ApplicationDetail'
 import { Applications } from './pages/Applications'
@@ -6,6 +7,7 @@ import { DriverLicenses } from './pages/DriverLicenses'
 import { Drivers } from './pages/Drivers'
 import { LicenseClasses } from './pages/LicenseClasses'
 import { LicenseDetail } from './pages/LicenseDetail'
+import { Login } from './pages/Login'
 import { Licenses } from './pages/Licenses'
 import { NewApplication } from './pages/NewApplication'
 import { Overview } from './pages/Overview'
@@ -16,7 +18,14 @@ import { PersonForm } from './pages/PersonForm'
 export default function App() {
   return (
     <Routes>
-      <Route element={<Shell />}>
+      <Route path="login" element={<Login />} />
+      <Route
+        element={
+          <RequireAuth>
+            <Shell />
+          </RequireAuth>
+        }
+      >
         <Route index element={<Overview />} />
         <Route path="people" element={<People />} />
         <Route path="people/new" element={<PersonForm />} />
