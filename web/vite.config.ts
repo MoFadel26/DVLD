@@ -6,7 +6,8 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/api': 'http://localhost:5000',
+      // DVLD_API_URL lets the end-to-end tests point the app at their own API instance.
+      '/api': process.env.DVLD_API_URL ?? 'http://localhost:5000',
     },
   },
 })
