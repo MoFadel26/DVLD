@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { ar, classDescriptionsAr, classNamesAr, countries, en, I18nContext, type I18n, type Lang } from '../i18n'
+import { ar, classDescriptionsAr, classNamesAr, countryNamesAr, en, I18nContext, type I18n, type Lang } from '../i18n'
 
 const LANG_KEY = 'dvld.lang'
 
@@ -43,10 +43,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       className: (id, fallback) => (lang === 'ar' ? (classNamesAr[id] ?? fallback) : fallback),
       classDescription: (id, fallback) =>
         lang === 'ar' ? (classDescriptionsAr[id] ?? fallback) : fallback,
-      country: (id, fallback) => {
-        const c = countries.find((x) => x.id === id)
-        return c ? c[lang] : (fallback ?? '')
-      },
+      country: (name) => (name && lang === 'ar' ? (countryNamesAr[name] ?? name) : (name ?? '')),
     }
   }, [lang])
 

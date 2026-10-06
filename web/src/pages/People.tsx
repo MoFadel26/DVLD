@@ -82,7 +82,7 @@ export function People() {
                     <td dir="ltr" className="cell-code">
                       {p.phone}
                     </td>
-                    <td>{country(p.nationalityCountryId, p.countryName)}</td>
+                    <td>{country(p.countryName)}</td>
                   </tr>
                 )
               })}

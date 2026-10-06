@@ -22,6 +22,11 @@ export type Person = {
   imagePath: string | null
 }
 
+export type Country = {
+  countryId: number
+  countryName: string
+}
+
 export type PersonInput = {
   firstName: string
   secondName: string
@@ -164,6 +169,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 }
 
 export const api = {
+  countries: () => request<Country[]>('GET', '/countries'),
   people: () => request<Person[]>('GET', '/people'),
   person: (id: number) => request<Person>('GET', `/people/${id}`),
   personByNationalNo: (no: string) =>

@@ -70,7 +70,7 @@ export function PersonDetail() {
           {date(p.dateOfBirth)} <span className="muted">· {t('person.years', { n: p.age })}</span>
         </Fact>
         <Fact label={t('col.gender')}>{t(`gender.${p.gender}`)}</Fact>
-        <Fact label={t('col.country')}>{country(p.nationalityCountryId, p.countryName)}</Fact>
+        <Fact label={t('col.country')}>{country(p.countryName)}</Fact>
         <Fact label={t('col.phone')}>
           <span dir="ltr">{p.phone}</span>
         </Fact>

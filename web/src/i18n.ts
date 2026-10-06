@@ -111,6 +111,7 @@ export const en = {
   'form.dob': 'Date of birth',
   'form.gender': 'Gender',
   'form.country': 'Nationality',
+  'form.chooseCountry': 'Choose a country',
   'form.address': 'Address',
   'form.phone': 'Phone',
   'form.email': 'Email',
@@ -372,6 +373,7 @@ export const ar: Record<Key, string> = {
   'form.dob': 'تاريخ الميلاد',
   'form.gender': 'الجنس',
   'form.country': 'الجنسية',
+  'form.chooseCountry': 'اختر دولة',
   'form.address': 'العنوان',
   'form.phone': 'الهاتف',
   'form.email': 'البريد الإلكتروني',
@@ -541,17 +543,18 @@ export const classDescriptionsAr: Record<number, string> = {
   7: 'تسمح بقيادة الشاحنات والمركبات الثقيلة مثل الحافلات والشاحنات الكبيرة.',
 }
 
-// Mirrors the countries seeded by DatabaseSeeder; the API has no countries endpoint.
-export const countries: { id: number; en: string; ar: string }[] = [
-  { id: 1, en: 'Jordan', ar: 'الأردن' },
-  { id: 2, en: 'United States', ar: 'الولايات المتحدة' },
-  { id: 3, en: 'United Kingdom', ar: 'المملكة المتحدة' },
-  { id: 4, en: 'Canada', ar: 'كندا' },
-  { id: 5, en: 'Germany', ar: 'ألمانيا' },
-  { id: 6, en: 'Saudi Arabia', ar: 'السعودية' },
-  { id: 7, en: 'United Arab Emirates', ar: 'الإمارات' },
-  { id: 8, en: 'Egypt', ar: 'مصر' },
-]
+// Arabic names for the seeded countries, keyed by the English name the API returns.
+// Countries without an entry show their API name.
+export const countryNamesAr: Record<string, string> = {
+  Jordan: 'الأردن',
+  'United States': 'الولايات المتحدة',
+  'United Kingdom': 'المملكة المتحدة',
+  Canada: 'كندا',
+  Germany: 'ألمانيا',
+  'Saudi Arabia': 'السعودية',
+  'United Arab Emirates': 'الإمارات',
+  Egypt: 'مصر',
+}
 
 export type I18n = {
   lang: Lang
@@ -562,7 +565,7 @@ export type I18n = {
   money: (n: number) => string
   className: (id: number, fallback: string) => string
   classDescription: (id: number, fallback: string) => string
-  country: (id: number, fallback: string | null) => string
+  country: (name: string | null) => string
 }
 
 export const I18nContext = createContext<I18n | null>(null)

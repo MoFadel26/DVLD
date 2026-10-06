@@ -1,8 +1,8 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { api, ApiError, type Person, type PersonInput } from '../api'
+import { api, ApiError, useApi, type Person, type PersonInput } from '../api'
 import { Loading, PageHead, RuleNotice } from '../components/ui'
-import { countries, useI18n } from '../i18n'
+import { useI18n } from '../i18n'
 
 type Draft = PersonInput & { nationalNo: string }
 
@@ -17,7 +17,7 @@ const blank: Draft = {
   address: '',
   phone: '',
   email: '',
-  nationalityCountryId: 1,
+  nationalityCountryId: 0,
   imagePath: null,
 }
 
@@ -39,7 +39,7 @@ function fromPerson(p: Person): Draft {
 }
 
 export function PersonForm() {
-  const { t, lang } = useI18n()
+  const { t, country } = useI18n()
   const navigate = useNavigate()
   const params = useParams()
   const editId = params.id ? Number(params.id) : undefined
@@ -50,6 +50,7 @@ export function PersonForm() {
   const [error, setError] = useState<ApiError>()
   const [saving, setSaving] = useState(false)
   const [today] = useState(() => new Date().toISOString().slice(0, 10))
+  const countries = useApi(api.countries, [])
 
   useEffect(() => {
     if (editId === undefined) return
@@ -62,8 +63,8 @@ export function PersonForm() {
       .catch((err: ApiError) => setLoadError(err))
   }, [editId])
 
-  if (loadError) return <RuleNotice error={loadError} />
-  if (editId !== undefined && !original) return <Loading />
+  if (loadError ?? countries.error) return <RuleNotice error={(loadError ?? countries.error)!} />
+  if ((editId !== undefined && !original) || !countries.data) return <Loading />
 
   const set = <K extends keyof Draft>(key: K, value: Draft[K]) => setDraft((d) => ({ ...d, [key]: value }))
 
@@ -155,12 +156,16 @@ export function PersonForm() {
               <label htmlFor="country">{t('form.country')}</label>
               <select
                 id="country"
-                value={draft.nationalityCountryId}
+                required
+                value={countries.data.some((c) => c.countryId === draft.nationalityCountryId) ? draft.nationalityCountryId : ''}
                 onChange={(e) => set('nationalityCountryId', Number(e.target.value))}
               >
-                {countries.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c[lang]}
+                <option value="" disabled>
+                  {t('form.chooseCountry')}
+                </option>
+                {countries.data.map((c) => (
+                  <option key={c.countryId} value={c.countryId}>
+                    {country(c.countryName)}
                   </option>
                 ))}
               </select>
