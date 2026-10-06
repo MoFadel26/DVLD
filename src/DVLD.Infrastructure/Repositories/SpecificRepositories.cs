@@ -186,6 +186,23 @@ public class DriverRepository : Repository<Driver>, IDriverRepository
             .Include(d => d.Person)
             .FirstOrDefaultAsync(d => d.PersonId == personId, cancellationToken);
     }
+
+    public async Task<IReadOnlyList<Driver>> GetAllWithDetailsAsync(CancellationToken cancellationToken = default)
+    {
+        return await DbSet
+            .Include(d => d.Person)
+            .Include(d => d.Licenses)
+            .OrderByDescending(d => d.DriverId)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<Driver?> GetDetailsByIdAsync(int driverId, CancellationToken cancellationToken = default)
+    {
+        return await DbSet
+            .Include(d => d.Person)
+            .Include(d => d.Licenses)
+            .FirstOrDefaultAsync(d => d.DriverId == driverId, cancellationToken);
+    }
 }
 
 public class LicenseRepository : Repository<License>, ILicenseRepository

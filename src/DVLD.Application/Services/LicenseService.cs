@@ -413,6 +413,23 @@ public class LicenseService : ILicenseService
         return licenses.Select(l => ToDto(l, detainedIds.Contains(l.LicenseId))).ToList();
     }
 
+    public async Task<IReadOnlyList<LicenseResponseDto>> GetLicensesByPersonIdAsync(int personId, CancellationToken cancellationToken = default)
+    {
+        _ = await _unitOfWork.People.GetByIdAsync(personId, cancellationToken)
+            ?? throw new EntityNotFoundException("Person", personId);
+
+        // A person becomes a driver when their first license is issued; before that they have none.
+        var driver = await _unitOfWork.Drivers.GetByPersonIdAsync(personId, cancellationToken);
+        if (driver == null)
+        {
+            return Array.Empty<LicenseResponseDto>();
+        }
+
+        var licenses = await _unitOfWork.Licenses.GetLicensesByDriverIdAsync(driver.DriverId, cancellationToken);
+        var detainedIds = await _unitOfWork.DetainedLicenses.GetDetainedLicenseIdsAsync(cancellationToken);
+        return licenses.Select(l => ToDto(l, detainedIds.Contains(l.LicenseId))).ToList();
+    }
+
     private async Task<LicenseResponseDto> MapLicenseToDto(License license, CancellationToken cancellationToken)
     {
         bool isDetained = await _unitOfWork.DetainedLicenses.IsLicenseDetainedAsync(license.LicenseId, cancellationToken);

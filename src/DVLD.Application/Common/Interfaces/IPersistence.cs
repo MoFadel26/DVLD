@@ -59,6 +59,8 @@ public interface ITestResultRepository : IRepository<TestResultRecord>
 public interface IDriverRepository : IRepository<Driver>
 {
     Task<Driver?> GetByPersonIdAsync(int personId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Driver>> GetAllWithDetailsAsync(CancellationToken cancellationToken = default);
+    Task<Driver?> GetDetailsByIdAsync(int driverId, CancellationToken cancellationToken = default);
 }
 
 public interface ILicenseRepository : IRepository<License>

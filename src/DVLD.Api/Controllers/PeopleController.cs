@@ -9,10 +9,12 @@ namespace DVLD.Api.Controllers;
 public class PeopleController : ControllerBase
 {
     private readonly IPersonService _personService;
+    private readonly ILicenseService _licenseService;
 
-    public PeopleController(IPersonService personService)
+    public PeopleController(IPersonService personService, ILicenseService licenseService)
     {
         _personService = personService;
+        _licenseService = licenseService;
     }
 
     [HttpGet]
@@ -27,6 +29,13 @@ public class PeopleController : ControllerBase
     {
         var person = await _personService.GetByIdAsync(id, cancellationToken);
         return Ok(person);
+    }
+
+    [HttpGet("{id:int}/licenses")]
+    public async Task<ActionResult<IReadOnlyList<LicenseResponseDto>>> GetLicenses(int id, CancellationToken cancellationToken)
+    {
+        var licenses = await _licenseService.GetLicensesByPersonIdAsync(id, cancellationToken);
+        return Ok(licenses);
     }
 
     [HttpGet("by-national-no/{nationalNo}")]

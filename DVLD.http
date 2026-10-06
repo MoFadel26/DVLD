@@ -26,6 +26,9 @@ GET {{baseUrl}}/api/people
 ### Get Person by ID (Ahmad Al-Sayed - Eligible adult)
 GET {{baseUrl}}/api/people/1
 
+### Get a Person's Licenses (empty until their first license is issued)
+GET {{baseUrl}}/api/people/1/licenses
+
 ### Get Person by National ID
 GET {{baseUrl}}/api/people/by-national-no/N1001
 
@@ -184,6 +187,12 @@ GET {{baseUrl}}/api/licenses
 
 ### Get License by ID
 GET {{baseUrl}}/api/licenses/1
+
+### Get All Drivers
+GET {{baseUrl}}/api/drivers
+
+### Get Driver by ID
+GET {{baseUrl}}/api/drivers/1
 
 ### Get All Licenses by Driver ID
 GET {{baseUrl}}/api/licenses/driver/1

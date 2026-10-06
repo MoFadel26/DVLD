@@ -85,6 +85,7 @@ After that, the license can be renewed, replaced (lost or damaged), detained, re
 | :--- | :--- | :--- |
 | GET | `/api/people` | List all people |
 | GET | `/api/people/{id}` | Get a person |
+| GET | `/api/people/{id}/licenses` | List a person's licenses (empty until their first license is issued) |
 | GET | `/api/people/by-national-no/{nationalNo}` | Find a person by national ID |
 | POST | `/api/people` | Register a person |
 | PUT | `/api/people/{id}` | Update a person |
@@ -122,6 +123,15 @@ After that, the license can be renewed, replaced (lost or damaged), detained, re
 | GET | `/api/licenses` | List all licenses, newest first, with active and detained status |
 | GET | `/api/licenses/{id}` | Get a license |
 | GET | `/api/licenses/driver/{driverId}` | List a driver's licenses |
+
+### Drivers
+
+A person becomes a driver when their first license is issued.
+
+| Method | Route | Purpose |
+| :--- | :--- | :--- |
+| GET | `/api/drivers` | List drivers with their license counts |
+| GET | `/api/drivers/{id}` | Get a driver |
 
 ### License classes
 

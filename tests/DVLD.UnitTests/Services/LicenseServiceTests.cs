@@ -52,4 +52,26 @@ public class LicenseServiceTests
         Assert.True(licenses[1].IsDetained);
         Assert.Equal("Test User One", licenses[0].DriverFullName);
     }
+
+    [Fact]
+    public async Task GetLicensesByPerson_PersonWithoutDriverRecord_ReturnsEmpty()
+    {
+        var (context, uow) = TestDbContextFactory.Create(nameof(GetLicensesByPerson_PersonWithoutDriverRecord_ReturnsEmpty));
+        context.People.Add(new Person
+        {
+            PersonId = 1,
+            NationalNo = "TESTER_01",
+            FirstName = "Test",
+            SecondName = "User",
+            LastName = "One",
+            DateOfBirth = DateTime.UtcNow.AddYears(-30),
+            NationalityCountryId = 1
+        });
+        await context.SaveChangesAsync();
+
+        var service = new LicenseService(uow, new LicenseFactoryProvider(Array.Empty<ILicenseFactory>()), new NoOpDispatcher());
+
+        Assert.Empty(await service.GetLicensesByPersonIdAsync(1));
+        await Assert.ThrowsAsync<DVLD.Domain.Exceptions.EntityNotFoundException>(() => service.GetLicensesByPersonIdAsync(99));
+    }
 }

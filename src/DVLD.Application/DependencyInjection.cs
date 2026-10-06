@@ -66,6 +66,7 @@ public static class DependencyInjection
         });
 
         services.AddScoped<ICountryService, CountryService>();
+        services.AddScoped<IDriverService, DriverService>();
         services.AddScoped<IPersonService, PersonService>();
         services.AddScoped<ITestService, TestService>();
         services.AddScoped<ILicenseService, LicenseService>();
