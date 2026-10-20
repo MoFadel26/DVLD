@@ -62,7 +62,7 @@ Scalar and the OpenAPI JSON are only available in the Development environment (t
 
 ## Sign in
 
-Every endpoint except `POST /api/auth/login` needs a JWT in the `Authorization: Bearer <token>` header. The user who signs in is recorded as the creator of everything they do; request bodies no longer carry a user id.
+Every endpoint except `POST /api/auth/login` and `POST /api/auth/guest` needs a JWT in the `Authorization: Bearer <token>` header. The user who signs in is recorded as the creator of everything they do; request bodies no longer carry a user id.
 
 In Development the API seeds one account:
 
@@ -77,6 +77,8 @@ curl -s -X POST http://localhost:5000/api/auth/login \
 ```
 
 In Scalar, paste the returned `token` into the Bearer auth field. In `DVLD.http`, run the sign-in request first.
+
+For demos, `POST /api/auth/guest` (no body) creates a temporary user with a random name, such as `guest.layla.haddad.48213`, and returns the same response as `/login`. The web app shows it as "Try as a guest" and displays the name as "Layla Haddad". Its password is random and never shown, so a guest account cannot be signed into again. Each IP address can create 5 guests per minute; more get `429 Too Many Requests`. Guest users are not deleted, and they share the same data as everyone else.
 
 | Setting | Purpose |
 | :--- | :--- |
@@ -104,6 +106,7 @@ After that, the license can be renewed, replaced (lost or damaged), detained, re
 | Method | Route | Purpose |
 | :--- | :--- | :--- |
 | POST | `/api/auth/login` | Sign in with a username and password; returns a JWT |
+| POST | `/api/auth/guest` | Demo: sign in as a new temporary user with a random name (5 per minute per IP) |
 | POST | `/api/auth/logout` | Sign out: the token used for this request stops working at once |
 | GET | `/api/auth/me` | The signed-in user |
 

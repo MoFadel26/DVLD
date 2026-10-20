@@ -12,6 +12,10 @@ Content-Type: application/json
   "password": "Admin@12345"
 }
 
+### Or sign in as a temporary guest (demo). To use its token, change @token above to {{guest.response.body.$.token}}
+# @name guest
+POST {{baseUrl}}/api/auth/guest
+
 ### Who am I
 GET {{baseUrl}}/api/auth/me
 Authorization: Bearer {{token}}
