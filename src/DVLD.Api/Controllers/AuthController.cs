@@ -1,7 +1,9 @@
+using DVLD.Api.Auth;
 using DVLD.Application.DTOs;
 using DVLD.Application.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace DVLD.Api.Controllers;
 
@@ -21,6 +23,16 @@ public class AuthController : ControllerBase
     public async Task<ActionResult<LoginResponseDto>> Login([FromBody] LoginDto dto, CancellationToken cancellationToken)
     {
         var result = await _authService.LoginAsync(dto, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>Demo: signs in as a new temporary user with a random name. Limited per IP address.</summary>
+    [AllowAnonymous]
+    [EnableRateLimiting(GuestRateLimit.Policy)]
+    [HttpPost("guest")]
+    public async Task<ActionResult<LoginResponseDto>> Guest(CancellationToken cancellationToken)
+    {
+        var result = await _authService.SignInAsGuestAsync(cancellationToken);
         return Ok(result);
     }
 

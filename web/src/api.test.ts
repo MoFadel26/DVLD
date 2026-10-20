@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { api, ApiError, getSession, SESSION_EXPIRED_EVENT, setSession } from './api'
+import { api, ApiError, displayName, getSession, SESSION_EXPIRED_EVENT, setSession } from './api'
 import { json, mockApi, signIn, testSession } from './test/helpers'
 
 describe('api client', () => {
@@ -20,6 +20,11 @@ describe('api client', () => {
 
     const headers = fetchMock.mock.calls[0][1]?.headers as Record<string, string>
     expect(headers.Authorization).toBeUndefined()
+  })
+
+  it('shows a guest by name and anyone else by username', () => {
+    expect(displayName({ userId: 7, username: 'guest.layla.haddad.48213' })).toBe('Layla Haddad')
+    expect(displayName({ userId: 1, username: 'admin' })).toBe('admin')
   })
 
   it('ignores an expired session', () => {

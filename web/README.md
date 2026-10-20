@@ -11,7 +11,7 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:5173 and sign in as `admin` / `Admin@12345` (the account the API seeds in Development). Requests to `/api` are proxied to http://localhost:5000 with the signed-in user's token; when the token is rejected or expires, the app returns to the sign-in page.
+Open http://localhost:5173 and sign in as `admin` / `Admin@12345` (the account the API seeds in Development), or click "Try as a guest" to get a temporary account with a random name. Requests to `/api` are proxied to http://localhost:5000 with the signed-in user's token; when the token is rejected or expires, the app returns to the sign-in page.
 
 | Command | What it does |
 | :--- | :--- |
@@ -23,9 +23,9 @@ Open http://localhost:5173 and sign in as `admin` / `Admin@12345` (the account t
 
 ## Tests
 
-`npm test` runs in a few seconds and needs no API. It covers the API client and session handling, translations and right-to-left layout, sign-in, the route guard, the step indicator, and the Licenses page filters.
+`npm test` runs in a few seconds and needs no API. It covers the API client and session handling, translations and right-to-left layout, sign-in (including guest sign-in), the route guard, the step indicator, and the Licenses page filters.
 
-`npm run test:e2e` starts its own API on port 5055 and its own frontend on port 5174, then drives Chromium through sign-in and sign-out (including token revocation), a person's full route to an issued license with a failed and retaken test, detain, release, and renew, the age and pending-application rules, and the language and theme switches. Run `npx playwright install chromium` once first. The API uses the in-memory database; to run against PostgreSQL instead, set a connection string:
+`npm run test:e2e` starts its own API on port 5055 and its own frontend on port 5174, then drives Chromium through sign-in, guest sign-in, and sign-out (including token revocation), a person's full route to an issued license with a failed and retaken test, detain, release, and renew, the age and pending-application rules, and the language and theme switches. Run `npx playwright install chromium` once first. The API uses the in-memory database; to run against PostgreSQL instead, set a connection string:
 
 ```bash
 E2E_DB_CONNECTION="Host=localhost;Port=5432;Database=dvld_db;Username=postgres;Password=postgres" npm run test:e2e
