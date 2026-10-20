@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using DVLD.Application.Common.Interfaces;
 using DVLD.Application.DTOs;
 using DVLD.Domain.Entities;
@@ -7,6 +8,18 @@ namespace DVLD.Application.Services;
 
 public class AuthService : IAuthService
 {
+    /// <summary>
+    /// Guest usernames look like "guest.layla.haddad.48213". Users have no display name,
+    /// so the web app shows the name part ("Layla Haddad").
+    /// </summary>
+    public const string GuestUsernamePrefix = "guest.";
+
+    private static readonly string[] GuestFirstNames =
+        ["Layla", "Omar", "Noor", "Yousef", "Hana", "Karim", "Salma", "Tariq", "Rania", "Ziad", "Maya", "Faris", "Dina", "Sami", "Lina", "Adam"];
+
+    private static readonly string[] GuestLastNames =
+        ["Haddad", "Khoury", "Nasser", "Saleh", "Amin", "Darwish", "Hamdan", "Qasim", "Rahman", "Aziz", "Farah", "Mansour"];
+
     private readonly IUnitOfWork _unitOfWork;
     private readonly IPasswordHasher _passwordHasher;
     private readonly ITokenService _tokenService;
@@ -30,6 +43,33 @@ public class AuthService : IAuthService
         {
             throw new InvalidCredentialsException();
         }
+
+        var (token, expiresAt) = _tokenService.CreateToken(user);
+        return new LoginResponseDto(token, expiresAt, new UserDto(user.UserId, user.Username));
+    }
+
+    /// <summary>
+    /// Demo sign-in: creates a temporary user with a random name and signs it in.
+    /// Its password is random and never shown, so the account cannot be signed into again.
+    /// </summary>
+    public async Task<LoginResponseDto> SignInAsGuestAsync(CancellationToken cancellationToken = default)
+    {
+        string username;
+        do
+        {
+            string first = GuestFirstNames[Random.Shared.Next(GuestFirstNames.Length)];
+            string last = GuestLastNames[Random.Shared.Next(GuestLastNames.Length)];
+            username = $"{GuestUsernamePrefix}{first}.{last}.{Random.Shared.Next(10000, 100000)}".ToLowerInvariant();
+        }
+        while (await _unitOfWork.Users.GetByUsernameAsync(username, cancellationToken) != null);
+
+        var user = new User
+        {
+            Username = username,
+            PasswordHash = _passwordHasher.Hash(Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)))
+        };
+        await _unitOfWork.Users.AddAsync(user, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         var (token, expiresAt) = _tokenService.CreateToken(user);
         return new LoginResponseDto(token, expiresAt, new UserDto(user.UserId, user.Username));

@@ -49,6 +49,7 @@ builder.Services.AddAuthorization(options =>
 {
     options.FallbackPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
 });
+builder.Services.AddGuestRateLimit();
 
 var app = builder.Build();
 
@@ -67,6 +68,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
 app.MapControllers();
 
 if (app.Services.GetRequiredService<JwtSettings>().UsesGeneratedKey)
