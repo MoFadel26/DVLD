@@ -5,6 +5,17 @@ export type User = {
   username: string
 }
 
+// Guest users are created by POST /auth/guest with usernames like "guest.layla.haddad.48213".
+const GUEST_USERNAME = /^guest\.([a-z]+)\.([a-z]+)\.\d+$/
+
+const capitalize = (word: string) => word.charAt(0).toUpperCase() + word.slice(1)
+
+/** The name to show for a user: "Layla Haddad" for a guest, otherwise the username. */
+export function displayName(user: User) {
+  const guest = GUEST_USERNAME.exec(user.username)
+  return guest ? `${capitalize(guest[1])} ${capitalize(guest[2])}` : user.username
+}
+
 export type Session = {
   token: string
   expiresAt: string
@@ -219,6 +230,8 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 
 export const api = {
   login: (username: string, password: string) => request<Session>('POST', '/auth/login', { username, password }),
+  /** Demo: signs in as a new temporary user with a random name. */
+  guest: () => request<Session>('POST', '/auth/guest'),
   logout: () => request<void>('POST', '/auth/logout'),
 
   countries: () => request<Country[]>('GET', '/countries'),

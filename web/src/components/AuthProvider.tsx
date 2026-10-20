@@ -19,6 +19,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(next)
         setSessionState(next)
       },
+      signInAsGuest: async () => {
+        const next = await api.guest()
+        setSession(next)
+        setSessionState(next)
+      },
       signOut: async () => {
         // Revoke the token on the server; sign out locally even if that call fails.
         try {

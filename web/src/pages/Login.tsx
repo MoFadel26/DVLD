@@ -8,7 +8,7 @@ import { useI18n } from '../i18n'
 
 export function Login() {
   const { t, lang, setLang } = useI18n()
-  const { user, signIn } = useAuth()
+  const { user, signIn, signInAsGuest } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const from = (location.state as { from?: string } | null)?.from ?? '/'
@@ -16,21 +16,26 @@ export function Login() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<ApiError>()
-  const [busy, setBusy] = useState(false)
+  const [busy, setBusy] = useState<'password' | 'guest' | null>(null)
 
-  if (user) return <Navigate to={from} replace />
+  if (user && !busy) return <Navigate to={from} replace />
 
-  async function submit(e: FormEvent) {
-    e.preventDefault()
-    setBusy(true)
+  async function run(kind: 'password' | 'guest') {
+    setBusy(kind)
     setError(undefined)
     try {
-      await signIn(username.trim(), password)
+      if (kind === 'guest') await signInAsGuest()
+      else await signIn(username.trim(), password)
       navigate(from, { replace: true })
     } catch (err) {
       setError(err as ApiError)
-      setBusy(false)
+      setBusy(null)
     }
+  }
+
+  function submit(e: FormEvent) {
+    e.preventDefault()
+    run('password')
   }
 
   return (
@@ -55,6 +60,15 @@ export function Login() {
         <h1>{t('login.title')}</h1>
         <p className="lede">{t('login.lede')}</p>
 
+        <button type="button" className="btn btn-primary login-submit" disabled={busy !== null} onClick={() => run('guest')}>
+          {busy === 'guest' ? t('login.guestStarting') : t('login.guest')}
+        </button>
+        <p className="login-guest-hint">{t('login.guestHint')}</p>
+
+        <p className="login-or">
+          <span>{t('login.or')}</span>
+        </p>
+
         <form className="form" onSubmit={submit}>
           <div className="field">
             <label htmlFor="username">{t('login.username')}</label>
@@ -63,7 +77,6 @@ export function Login() {
               autoComplete="username"
               dir="ltr"
               required
-              autoFocus
               value={username}
               onChange={(e) => setUsername(e.target.value)}
             />
@@ -81,8 +94,8 @@ export function Login() {
             />
           </div>
           {error && <RuleNotice error={error} />}
-          <button type="submit" className="btn btn-primary login-submit" disabled={busy}>
-            {busy ? t('login.signingIn') : t('login.submit')}
+          <button type="submit" className="btn btn-secondary login-submit" disabled={busy !== null}>
+            {busy === 'password' ? t('login.signingIn') : t('login.submit')}
           </button>
         </form>
 

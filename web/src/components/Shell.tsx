@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
+import { displayName } from '../api'
 import { useAuth } from '../auth'
 import { useI18n } from '../i18n'
 import { Icon, type IconName } from './Icons'
@@ -87,10 +88,10 @@ export function Shell() {
           {user && (
             <div className="user-row">
               <span className="user-avatar" aria-hidden="true">
-                {user.username.slice(0, 1).toUpperCase()}
+                {displayName(user).slice(0, 1).toUpperCase()}
               </span>
               <span className="user-name" dir="ltr">
-                {user.username}
+                {displayName(user)}
               </span>
               <button type="button" className="toggle toggle-icon" onClick={signOut} aria-label={t('auth.signOut')} title={t('auth.signOut')}>
                 <Icon name="logout" size={16} className="flip-rtl" />
