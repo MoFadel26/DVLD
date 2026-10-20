@@ -16,6 +16,15 @@ test('signed-out visitors are sent to sign in, and wrong passwords are refused',
   await expect(page.getByRole('heading', { name: 'Licenses' })).toBeVisible()
 })
 
+test('visitors can try the app as a guest with a random name', async ({ page }) => {
+  await page.goto('/people')
+  await expect(page).toHaveURL(/\/login$/)
+
+  await page.getByRole('button', { name: 'Try as a guest' }).click()
+  await expect(page).toHaveURL(/\/people$/)
+  await expect(page.locator('.user-name')).toHaveText(/^[A-Z][a-z]+ [A-Z][a-z]+$/)
+})
+
 test('signing out revokes the token on the server', async ({ page }) => {
   await signIn(page)
   const token = await page.evaluate(() => JSON.parse(localStorage.getItem('dvld.session') ?? '{}').token as string)

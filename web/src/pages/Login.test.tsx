@@ -42,4 +42,28 @@ describe('Login', () => {
     expect(await screen.findByText('Licenses page')).toBeInTheDocument()
     expect(getSession()?.user.username).toBe('admin')
   })
+
+  it('signs in as a guest without a username or password', async () => {
+    const guestSession = { ...testSession, user: { userId: 7, username: 'guest.layla.haddad.48213' } }
+    mockApi({ 'POST /auth/guest': () => json(guestSession) })
+    renderApp(app(), { route: { pathname: '/login', state: { from: '/licenses' } } })
+
+    await userEvent.click(screen.getByRole('button', { name: 'Try as a guest' }))
+
+    expect(await screen.findByText('Licenses page')).toBeInTheDocument()
+    expect(getSession()?.user.username).toBe('guest.layla.haddad.48213')
+  })
+
+  it('explains the limit when there are too many guest sign-ins', async () => {
+    mockApi({
+      'POST /auth/guest': () =>
+        json({ title: 'Too Many Requests', detail: 'Too many guest sign-ins from this address. Try again in a minute.', status: 429 }, 429),
+    })
+    renderApp(app(), { route: '/login' })
+
+    await userEvent.click(screen.getByRole('button', { name: 'Try as a guest' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Too many guest sign-ins')
+    expect(getSession()).toBeNull()
+  })
 })
