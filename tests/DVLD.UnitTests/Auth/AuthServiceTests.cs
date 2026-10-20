@@ -60,6 +60,33 @@ public class AuthServiceTests
     }
 
     [Fact]
+    public async Task SignInAsGuest_CreatesUserWithRandomName_AndReturnsItsToken()
+    {
+        var (context, service) = await CreateServiceWithContext(nameof(SignInAsGuest_CreatesUserWithRandomName_AndReturnsItsToken));
+
+        var result = await service.SignInAsGuestAsync();
+
+        var guest = Assert.Single(context.Users, u => u.UserId == result.User.UserId);
+        Assert.Matches(@"^guest\.[a-z]+\.[a-z]+\.\d{5}$", guest.Username);
+        Assert.Equal(guest.Username, result.User.Username);
+        Assert.Equal($"token-for-{guest.UserId}", result.Token);
+        Assert.True(guest.IsActive);
+    }
+
+    [Fact]
+    public async Task SignInAsGuest_EachCallCreatesADifferentUser()
+    {
+        var (context, service) = await CreateServiceWithContext(nameof(SignInAsGuest_EachCallCreatesADifferentUser));
+
+        var first = await service.SignInAsGuestAsync();
+        var second = await service.SignInAsGuestAsync();
+
+        Assert.NotEqual(first.User.UserId, second.User.UserId);
+        Assert.NotEqual(first.User.Username, second.User.Username);
+        Assert.Equal(3, context.Users.Count());
+    }
+
+    [Fact]
     public async Task GetCurrentUser_ReturnsSignedInUser()
     {
         var service = await CreateService(nameof(GetCurrentUser_ReturnsSignedInUser));
