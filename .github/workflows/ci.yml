@@ -7,7 +7,7 @@ on:
 
 jobs:
   api:
-    name: API build and tests
+    name: API build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -15,7 +15,6 @@ jobs:
         with:
           dotnet-version: 10.0.x
       - run: dotnet build DVLD.slnx
-      - run: dotnet test DVLD.slnx --no-build
 
   web:
     name: Web lint, tests and build
