@@ -18,6 +18,3 @@ Library/
 
 # Impeccable design tool working files
 .impeccable/
-
-# Backend tests (kept locally, not in the repository)
-tests/
