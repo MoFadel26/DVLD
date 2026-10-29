@@ -53,6 +53,8 @@ The connection string is in `src/DVLD.Api/appsettings.json`. The database is cre
 ## Run the tests
 
 ```bash
+dotnet test DVLD.slnx  # backend
+
 cd web
 npm test          # website
 npm run test:e2e  # full app in a browser

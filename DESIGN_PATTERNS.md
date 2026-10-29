@@ -1,9 +1,9 @@
 # Driving & Vehicle Licensing Department (DVLD)
 ## Design Patterns Catalog & Architectural Guide
 
-This project was built to deliberately practice and showcase classic **Gang of Four (GoF)** and **Enterprise Architectural Design Patterns** in a clean, readable, and idiomatic C# (.NET 10) implementation.
+This project uses the following **Gang of Four (GoF)** and **Enterprise Architectural Design Patterns** in C# (.NET 10).
 
-Below is the detailed documentation for every pattern applied in this system. For each pattern, we specify:
+Each pattern below lists:
 1. **Pattern Name & Category**
 2. **Where and How It Is Applied in DVLD**
 3. **Why It Fits This Specific Use Case**
@@ -18,17 +18,17 @@ Below is the detailed documentation for every pattern applied in this system. Fo
   - Interfaces: `IValidationHandler<TRequest>`, `INewApplicationValidationPipeline`
   - Base: `AbstractValidationHandler<TRequest>`
   - Handlers:
-    - `PersonExistsValidationHandler`: Verifies the applicant person exists in the database.
-    - `MinimumAgeValidationHandler`: Verifies the applicant's age matches or exceeds `LicenseClass.MinimumAllowedAge`.
-    - `NoActiveLicenseOfSameClassValidationHandler`: Verifies the applicant does not already hold an active license of the same class.
-    - `NoPendingApplicationOfSameClassValidationHandler`: Verifies the applicant does not have an active pending (`New`) application of the same class.
-    - `NewApplicationValidationPipeline`: Chains the handlers together.
+    - `PersonExistsValidationHandler`: Checks that the applicant person exists in the database.
+    - `MinimumAgeValidationHandler`: Checks that the applicant's age is at least `LicenseClass.MinimumAllowedAge`.
+    - `NoActiveLicenseOfSameClassValidationHandler`: Checks that the applicant does not already hold an active license of the same class.
+    - `NoPendingApplicationOfSameClassValidationHandler`: Checks that the applicant does not have a pending (`New`) application of the same class.
+    - `NewApplicationValidationPipeline`: Links the handlers in the order above.
 
 - **Why It Fits This Specific Case**:
-  Submitting a new local driving license application requires a strict sequence of business rule validations before any records are created or fees are processed. If any validation fails, the pipeline immediately halts and throws an informative domain exception (`AgeRequirementNotMetException`, `ActiveLicenseAlreadyExistsException`, etc.). If a check passes, execution automatically forwards to the successor in the chain.
+  A new local driving license application must pass four business rule checks, in order, before the fee is calculated and any records are created. If a check fails, its handler throws a domain exception (`AgeRequirementNotMetException`, `ActiveLicenseAlreadyExistsException`, etc.) and the chain stops. If a check passes, the handler calls the next handler in the chain.
 
 - **Simpler Alternative**:
-  A single monolithic method containing consecutive `if` statements querying the repositories one after another:
+  One method with consecutive `if` statements that query the repositories one after another:
   ```csharp
   if (person == null) throw new EntityNotFoundException(...);
   if (person.GetAge() < licenseClass.MinimumAllowedAge) throw new AgeRequirementNotMetException(...);
@@ -37,8 +37,8 @@ Below is the detailed documentation for every pattern applied in this system. Fo
   ```
 
 - **Trade-Offs**:
-  - **Pros**: Adheres strictly to the **Single Responsibility Principle** (each handler evaluates exactly one business rule) and the **Open/Closed Principle** (adding new checks, such as criminal record or medical fitness, requires only creating a new handler and inserting it into the chain without touching existing handlers). Each handler can be independently unit tested in isolation.
-  - **Cons**: Requires more classes and boilerplate interfaces than a linear validation method.
+  - **Pros**: Follows the **Single Responsibility Principle** (each handler checks one business rule) and the **Open/Closed Principle** (a new check, such as criminal record or medical fitness, is a new handler added to the chain; existing handlers do not change). Each handler can be unit tested on its own.
+  - **Cons**: More classes and interfaces than a single validation method.
 
 ---
 
@@ -53,10 +53,10 @@ Below is the detailed documentation for every pattern applied in this system. Fo
   - Factory: `ApplicationStateFactory`
 
 - **Why It Fits This Specific Case**:
-  An `Application` in DVLD transitions through distinct lifecycle stages (`New`, `Cancelled`, `Completed`). Key business operations (scheduling vision/theory/practical tests, issuing licenses, or cancelling) are strictly dependent on the current state. The State pattern allows the application object to alter its behavior when its internal status changes.
+  An `Application` in DVLD has three statuses: `New`, `Cancelled`, `Completed`. Whether it can be cancelled, have tests scheduled (vision, theory, practical), or have a license issued depends on the current status. `Application.CurrentState` returns the state object for the current status, and that object decides what is allowed.
 
 - **Simpler Alternative**:
-  Using a plain integer/enum property `ApplicationStatus` and littering service methods with defensive enum checks:
+  A plain integer/enum property `ApplicationStatus` with enum checks repeated in each service method:
   ```csharp
   if (app.ApplicationStatus == EnApplicationStatus.Completed)
       throw new DomainException("Application is already completed.");
@@ -65,8 +65,8 @@ Below is the detailed documentation for every pattern applied in this system. Fo
   ```
 
 - **Trade-Offs**:
-  - **Pros**: Encapsulates state-dependent transitions and behavior directly within state classes, eliminating fragile conditional logic spread throughout multiple service layers.
-  - **Cons**: Adds classes and allocations for state objects where a simple enum check would suffice for trivial CRUD systems.
+  - **Pros**: Status rules and transitions live in the state classes instead of being repeated as conditionals across several services.
+  - **Cons**: Adds classes and state object allocations where a simple enum check would be enough for basic CRUD.
 
 ---
 
@@ -85,7 +85,7 @@ Below is the detailed documentation for every pattern applied in this system. Fo
   - Context: `FeeCalculationContext` (`IFeeCalculationContext`)
 
 - **Why It Fits This Specific Case**:
-  DVLD offers 7 distinct service types, each governed by different fee calculation formulas. The Strategy pattern defines a family of pricing algorithms, encapsulates each one in a separate class, and makes them interchangeable at runtime.
+  DVLD has 7 application types, and each one has its own fee formula. Each formula is in its own strategy class. `FeeCalculationContext` picks the strategy that matches the request's application type.
 
 - **Simpler Alternative**:
   A single method with a hardcoded `switch` expression:
@@ -98,8 +98,8 @@ Below is the detailed documentation for every pattern applied in this system. Fo
   ```
 
 - **Trade-Offs**:
-  - **Pros**: Eliminates monolithic switch statements and makes each pricing algorithm open for modification or replacement (e.g. promotional discounts, regional surcharges) without modifying calling code.
-  - **Cons**: Requires defining multiple strategy classes, interfaces, and registering them into the dependency injection container.
+  - **Pros**: No large switch statement. One fee formula can be changed or replaced (for example, to add a discount or a regional surcharge) without changing the calling code.
+  - **Cons**: Requires multiple strategy classes, an interface, and registering each strategy in the dependency injection container.
 
 ---
 
@@ -108,21 +108,21 @@ Below is the detailed documentation for every pattern applied in this system. Fo
 - **Location**: `DVLD.Application/Patterns/Factory/`
   - Interface: `ILicenseFactory`
   - Concrete Factories:
-    - `FirstTimeLicenseFactory`: Issues initial license with validity corresponding to `LicenseClass.ValidityLength` (5 or 10 years), sets `IssueReason = FirstTime`.
-    - `RenewLicenseFactory`: Deactivates previous active license, creates new license with renewed validity period, sets `IssueReason = Renew`.
-    - `LostReplacementLicenseFactory`: Deactivates old lost license, creates replacement retaining the original expiration date, sets `IssueReason = ReplacementForLost`.
-    - `DamagedReplacementLicenseFactory`: Deactivates old damaged license, creates replacement retaining the original expiration date, sets `IssueReason = ReplacementForDamaged`.
+    - `FirstTimeLicenseFactory`: Issues the first license with validity from `LicenseClass.ValidityLength` (5 or 10 years), sets `IssueReason = FirstTime`.
+    - `RenewLicenseFactory`: Deactivates the previous active license, creates a new license with a new validity period, sets `IssueReason = Renew`.
+    - `LostReplacementLicenseFactory`: Deactivates the old lost license, creates a replacement with the original expiration date, sets `IssueReason = ReplacementForLost`.
+    - `DamagedReplacementLicenseFactory`: Deactivates the old damaged license, creates a replacement with the original expiration date, sets `IssueReason = ReplacementForDamaged`.
   - Provider: `LicenseFactoryProvider` (`ILicenseFactoryProvider`)
 
 - **Why It Fits This Specific Case**:
-  Issuing a license varies dramatically depending on whether it is an initial issuance, a renewal, or a replacement for loss/damage. Each variant has different validity calculations (e.g., fresh 10-year term vs preserving previous expiry date) and deactivation side effects. The Factory Method pattern decouples the licensing service from the specific creation mechanisms.
+  Issuing a license works differently for a first license, a renewal, and a replacement for a lost or damaged license. Each case sets the expiration date differently (a new term of `ValidityLength` years, or the previous license's expiration date) and some deactivate the previous license. The licensing service asks `LicenseFactoryProvider` for the factory that matches the issue reason and does not need to know how each license is built.
 
 - **Simpler Alternative**:
-  Instantiating and populating `new License { ... }` directly in each endpoint method or passing flags into a shared creation function.
+  Creating and filling `new License { ... }` directly in each endpoint method, or passing flags into a shared creation function.
 
 - **Trade-Offs**:
-  - **Pros**: Keeps license creation logic cohesive and isolated per business scenario. Adding new issuance types (e.g., Temporary Permits, Military Conversions) requires only implementing a new `ILicenseFactory`.
-  - **Cons**: Introduces extra abstraction layers, context objects (`LicenseCreationContext`), and factory registry wiring.
+  - **Pros**: License creation logic for each case is in one class. A new issue type (for example, temporary permits or military conversions) needs only a new `ILicenseFactory`.
+  - **Cons**: Adds abstraction layers, a context object (`LicenseCreationContext`), and factory registration.
 
 ---
 
@@ -132,21 +132,21 @@ Below is the detailed documentation for every pattern applied in this system. Fo
   - Base: `BaseTestWorkflow` (`ITestWorkflow`)
   - Template Methods:
     - `ScheduleAppointmentAsync`: Defines the 6-step appointment scheduling algorithm (App status check -> Prerequisite check -> Already passed check -> Open appointment check -> Fee calculation -> Build & Persist).
-    - `RecordTestResultAsync`: Defines the test execution algorithm (Lock appointment -> Record Pass/Fail -> Execute post-result hooks).
+    - `RecordTestResultAsync`: Defines the test result algorithm (Lock appointment -> Record Pass/Fail -> Run post-result hook).
   - Concrete Subclasses:
     - `VisionTestWorkflow`: Overrides `ValidatePrerequisitesAsync` (No prerequisite needed).
-    - `TheoryTestWorkflow`: Overrides `ValidatePrerequisitesAsync` (Guarantees Vision test is passed).
-    - `PracticalTestWorkflow`: Overrides `ValidatePrerequisitesAsync` (Guarantees Theory test is passed).
+    - `TheoryTestWorkflow`: Overrides `ValidatePrerequisitesAsync` (Requires a passed Vision test).
+    - `PracticalTestWorkflow`: Overrides `ValidatePrerequisitesAsync` (Requires a passed Theory test).
   - Resolver: `TestWorkflowResolver`
 
 - **Why It Fits This Specific Case**:
-  DVLD enforces an invariant sequence: Vision Test -> Theory Test -> Practical Test. The 3 test types share the exact same appointment scheduling and score recording algorithm, but differ in prerequisite validation and fees. The Template Method defines the skeleton of the algorithm in the base class, ensuring that the critical sequence is strictly enforced.
+  DVLD requires tests in a fixed order: Vision Test -> Theory Test -> Practical Test. The 3 test types use the same appointment scheduling and result recording steps. They differ only in the prerequisite check; the fee is read from each test type's record. The base class defines the steps, and each subclass supplies its prerequisite check.
 
 - **Simpler Alternative**:
-  Three separate methods in `TestService` (`ScheduleVisionTest`, `ScheduleTheoryTest`, `SchedulePracticalTest`) duplicating the validation, lock checks, fee retrieval, and appointment creation.
+  Three separate methods in `TestService` (`ScheduleVisionTest`, `ScheduleTheoryTest`, `SchedulePracticalTest`) that each repeat the validation, lock checks, fee lookup, and appointment creation.
 
 - **Trade-Offs**:
-  - **Pros**: Prevents code duplication across the 3 test stages and mathematically prevents skipping prerequisite tests.
+  - **Pros**: No duplicated code across the 3 test stages, and a test cannot be scheduled before its prerequisite test is passed.
   - **Cons**: Subclasses are tightly coupled to the abstract base class via inheritance.
 
 ---
@@ -155,17 +155,17 @@ Below is the detailed documentation for every pattern applied in this system. Fo
 
 - **Location**: `DVLD.Application/Patterns/Builder/`
   - Builders:
-    - `LicenseBuilder`: Step-by-step construction of `License` entities. Validates foreign keys, positive fees, and ensures `ExpirationDate > IssueDate`.
-    - `TestAppointmentBuilder`: Step-by-step construction of `TestAppointment` entities. Validates mandatory local app and test type identifiers.
+    - `LicenseBuilder`: Builds `License` entities step by step. `Build()` checks that `ApplicationId`, `DriverId`, and `LicenseClassId` are positive and that `ExpirationDate > IssueDate`.
+    - `TestAppointmentBuilder`: Builds `TestAppointment` entities step by step. `Build()` checks that `TestTypeId` and `LocalDrivingLicenseApplicationId` are positive.
 
 - **Why It Fits This Specific Case**:
-  `License` and `TestAppointment` are complex entities with numerous mandatory and optional attributes (ApplicationId, DriverId, LicenseClassId, IssueDate, ExpirationDate, Notes, Fees, IsActive, IssueReason, CreatedByUserId). The Builder pattern allows construction with clear, readable method chaining while guaranteeing that an invalid object cannot be built.
+  `License` and `TestAppointment` have many required and optional fields (ApplicationId, DriverId, LicenseClassId, IssueDate, ExpirationDate, Notes, Fees, IsActive, IssueReason, CreatedByUserId). The builder sets them through chained method calls, and `Build()` throws if the checks above fail.
 
 - **Simpler Alternative**:
-  A massive 10-parameter constructor `new License(appId, driverId, classId, ...)` or raw object initializers where required fields can easily be omitted or set incorrectly.
+  A 10-parameter constructor `new License(appId, driverId, classId, ...)` or raw object initializers where required fields are easy to leave out or set wrong.
 
 - **Trade-Offs**:
-  - **Pros**: Highly expressive fluent API, protects domain invariants, and avoids telescoping constructors.
+  - **Pros**: Readable chained calls, invalid IDs and dates are rejected in `Build()`, and no long constructors.
   - **Cons**: Extra code to maintain for builder classes.
 
 ---
@@ -176,20 +176,20 @@ Below is the detailed documentation for every pattern applied in this system. Fo
   - Domain Events: `IDomainEvent`, `LicenseIssuedEvent`, `TestPassedEvent`, `TestFailedEvent`, `ApplicationStatusChangedEvent`.
   - Dispatcher: `IDomainEventDispatcher`, `DomainEventDispatcher`.
   - Observers / Handlers:
-    - `LicenseIssuedEventHandler`: Logs license issuance and driver records.
-    - `TestPassedEventHandler`: Logs successful test passes and milestones.
-    - `TestFailedEventHandler`: Logs test failures and alerts to retake requirement.
-    - `ApplicationStatusChangedEventHandler`: Audit logging of lifecycle transitions.
+    - `LicenseIssuedEventHandler`: Logs the issued license, driver, license class, and issue reason.
+    - `TestPassedEventHandler`: Logs a passed test.
+    - `TestFailedEventHandler`: Logs a warning for a failed test and that a retake is required.
+    - `ApplicationStatusChangedEventHandler`: Logs the old and new application status.
 
 - **Why It Fits This Specific Case**:
-  When domain state mutations occur (e.g. issuing a license or failing a test), secondary side effects (audit trails, notification triggers, analytics) should occur without polluting the primary transactional business logic. The Observer pattern allows decoupled subscribers to react to events.
+  When a service changes domain state (for example, issues a license or records a failed test), it dispatches an event. Side effects such as logging run in separate handlers instead of inside the main business logic.
 
 - **Simpler Alternative**:
-  Directly invoking audit logging and notification helper methods inside the main service methods.
+  Calling logging and notification helper methods directly inside the main service methods.
 
 - **Trade-Offs**:
-  - **Pros**: High cohesion, low coupling, and the ability to add new observers (such as SMS/Email dispatchers) without touching the core licensing logic.
-  - **Cons**: Indirection in program flow; errors in asynchronous event handlers must be explicitly handled so as not to break primary workflows.
+  - **Pros**: Services do not depend on the handlers. A new observer (such as an SMS or email sender) can be added without changing the licensing logic.
+  - **Cons**: Program flow is harder to follow. A handler error must not break the main operation, so `DomainEventDispatcher` catches and logs exceptions from each handler.
 
 ---
 
@@ -199,18 +199,18 @@ Below is the detailed documentation for every pattern applied in this system. Fo
   - Interface: `IApplicationService`
   - Core Service: `ApplicationService`
   - Decorators:
-    - `LoggingApplicationServiceDecorator`: Intercepts calls to log parameters, success, and error details.
-    - `PerformanceApplicationServiceDecorator`: Measures execution time with high-resolution `Stopwatch` and logs execution latency.
+    - `LoggingApplicationServiceDecorator`: Logs each call's parameters, success, and errors.
+    - `PerformanceApplicationServiceDecorator`: Measures execution time with `Stopwatch` and logs it.
 
 - **Why It Fits This Specific Case**:
-  Cross-cutting concerns like structured logging and performance metrics are required across application services. The Decorator pattern dynamically wraps `IApplicationService` in the dependency injection pipeline without modifying `ApplicationService`.
+  Logging and timing are needed around application service calls. The dependency injection setup wraps `ApplicationService` in `PerformanceApplicationServiceDecorator`, then in `LoggingApplicationServiceDecorator`, without changing `ApplicationService`.
 
 - **Simpler Alternative**:
   Writing `_logger.LogInformation(...)` and `Stopwatch.StartNew()` directly inside every method of `ApplicationService`.
 
 - **Trade-Offs**:
-  - **Pros**: Preserves the Single Responsibility Principle of the business service and allows decorators to be added, reordered, or removed via DI configuration.
-  - **Cons**: Requires interface duplication and forwarding boilerplate for every method in the decorated interface.
+  - **Pros**: `ApplicationService` contains only business logic. Decorators can be added, reordered, or removed in the DI configuration.
+  - **Cons**: Each decorator must implement every method of the interface and forward the call.
 
 ---
 
@@ -222,11 +222,11 @@ Below is the detailed documentation for every pattern applied in this system. Fo
   - Unit of Work: `IUnitOfWork`, `UnitOfWork`.
 
 - **Why It Fits This Specific Case**:
-  Decouples the business logic (`DVLD.Application`) from Entity Framework Core and PostgreSQL. It simplifies unit testing by allowing repositories to be mocked or backed by in-memory databases, and ensures atomic database transactions across multiple aggregates.
+  The business logic (`DVLD.Application`) does not depend on Entity Framework Core or PostgreSQL. Tests can use mocked repositories or an in-memory database. All repositories share one `DvldDbContext` through `UnitOfWork`, so one `SaveChangesAsync` call saves pending changes from all of them together.
 
 - **Simpler Alternative**:
   Injecting `DvldDbContext` directly into API controllers or application services.
 
 - **Trade-Offs**:
-  - **Pros**: Clear architectural boundary, highly testable code, and centralized persistence logic.
+  - **Pros**: Clear boundary between business logic and persistence, easier testing, and persistence code in one place.
   - **Cons**: Extra abstraction layer over EF Core, which already implements Repository and Unit of Work patterns natively.
